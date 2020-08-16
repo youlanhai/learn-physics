@@ -1,0 +1,11 @@
+.DS_Store
+*.pyc
+
+Library/
+Temp/
+Logs/
+obj/
+.vs/
+
+*.sln
+*.csproj

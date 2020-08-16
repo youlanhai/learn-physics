@@ -1,0 +1,152 @@
+###############################################################################
+# Set default behavior to automatically normalize line endings.
+###############################################################################
+#* text eol=auto
+
+*.sln           text eol=crlf
+*.vcproj        text eol=crlf
+*.vcxproj       text eol=crlf
+*.vcxproj.filters text eol=crlf
+*.rc            text eol=crlf
+*.csproj        text eol=crlf
+*.bat           text eol=crlf
+
+*.ai            text  eol=lf
+*.noviceGuide	text  eol=lf
+*.functionGuide	text  eol=lf
+*.assets        text  eol=lf
+*.anim          text  eol=lf
+*.c             text  eol=lf
+*.cmake         text  eol=lf
+*.cpp           text  eol=lf
+*.cpp           text  eol=lf
+*.cfg           text  eol=lf
+*.controller    text  eol=lf
+*.cs            text  eol=lf
+*.fx            text  eol=lf
+*.fontsettings  text  eol=lf
+*.fnt           text  eol=lf
+*.gitattributes     text  eol=lf
+*.gitignore     text  eol=lf
+*.gitmodules    text  eol=lf
+*.glsl          text  eol=lf
+*.h             text  eol=lf
+*.hpp           text  eol=lf
+*.html          text  eol=lf
+*.inl           text  eol=lf
+*.ipp           text  eol=lf
+*.java          text  eol=lf
+*.js            text  eol=lf
+*.json          text  eol=lf
+*.layout        text  eol=lf
+*.list          text  eol=lf
+*.lua           text  eol=lf
+*.material      text  eol=lf
+*.md            text  eol=lf
+*.mat           text  eol=lf
+*.meta          text  eol=lf
+*.proto         text  eol=lf
+*.prefab        text  eol=lf
+*.py            text  eol=lf
+*.sh            text  eol=lf
+*.shader        text  eol=lf
+*.tab           text  eol=lf
+*.txt           text  eol=lf
+*.unity         text  eol=lf
+*.xml           text  eol=lf
+*.yaml          text  eol=lf
+*.m             text  eol=lf
+*.mm            text  eol=lf
+*.projmods      text  eol=lf
+*.plist         text  eol=lf
+*.guiskin       text  eol=lf
+
+###############################################################################
+# Set default behavior for command prompt diff.
+#
+# This is need for earlier builds of msysgit that does not have it on by
+# default for csharp files.
+# Note: This is only used by command line
+###############################################################################
+#*.cs     diff=csharp
+
+###############################################################################
+# Set the merge driver for project and solution files
+#
+# Merging from the command prompt will add diff markers to the files if there
+# are conflicts (Merging from VS is not affected by the settings below, in VS
+# the diff markers are never inserted). Diff markers may cause the following 
+# file extensions to fail to load in VS. An alternative would be to treat
+# these files as binary and thus will always conflict and require user
+# intervention with every merge. To do so, just uncomment the entries below
+###############################################################################
+#*.sln       merge=binary
+#*.csproj    merge=binary
+#*.vbproj    merge=binary
+#*.vcxproj   merge=binary
+#*.vcproj    merge=binary
+#*.dbproj    merge=binary
+#*.fsproj    merge=binary
+#*.lsproj    merge=binary
+#*.wixproj   merge=binary
+#*.modelproj merge=binary
+#*.sqlproj   merge=binary
+#*.wwaproj   merge=binary
+
+
+###############################################################################
+# behavior for image files
+#
+# image files are treated as binary by default.
+###############################################################################
+*.ico   binary
+*.psd   binary
+*.svg   binary
+*.jpg   binary
+*.png   binary
+*.gif   binary
+*.exe   binary
+*.mesh  binary
+*.aps   binary
+*.bmp   binary
+*.tga   binary
+*.primitives    binary
+*.animation     binary
+*.ttf   binary
+*.tif   binary
+*.fbx   binary
+
+*.dll   binary
+*.lib   binary
+*.dylib binary
+*.so    binary
+*.a     binary
+*.exr   binary
+
+
+*.doc   binary
+*.docx  binary
+*.xls   binary
+*.xlsx  binary
+*.wps   binary
+*.zip   binary
+*.rar   binary
+*.tar   binary
+
+###############################################################################
+# diff behavior for common document formats
+# 
+# Convert binary document formats to text before diffing them. This feature
+# is only available from the command line. Turn it on by uncommenting the 
+# entries below.
+###############################################################################
+#*.doc   diff=astextplain
+#*.DOC   diff=astextplain
+#*.docx  diff=astextplain
+#*.DOCX  diff=astextplain
+#*.dot   diff=astextplain
+#*.DOT   diff=astextplain
+#*.pdf   diff=astextplain
+#*.PDF   diff=astextplain
+#*.rtf   diff=astextplain
+#*.RTF   diff=astextplain
