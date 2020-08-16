@@ -24,9 +24,9 @@ namespace gjk2d
         GUIContent helpContent = new GUIContent(
             "<color=#ff00ff>鼠标选中</color>; " +
             "<color=red>发生碰撞</color>; " +
-            "<color=grey>近似的Minkowski差集</color>" +
-            "<color=blue>单形体</color>" +
-            "<color=yellow>当前support的方向</color>"
+            "<color=grey>近似的Minkowski差集</color>; " +
+            "<color=blue>单形体</color>; " +
+            "<color=yellow>当前support的方向</color>; "
             );
         
         void Start()

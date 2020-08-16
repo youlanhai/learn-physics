@@ -35,6 +35,8 @@ namespace gjk2d
 
             simplex.clear();
             isCollision = false;
+            direction = Vector2.zero;
+            yield return null;
 
             direction = findFirstDirection();
             simplex.add(support(direction));
