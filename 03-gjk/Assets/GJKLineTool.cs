@@ -4,9 +4,15 @@ using System.Collections.Generic;
 public class GJKLineTool : MonoBehaviour
 {
     public GameObject lineRendererPrefab;
+    private LineRenderer originLineRenderer;
 
     int lineRendererIndex;
     List<LineRenderer> lineRenderers = new List<LineRenderer>();
+
+    private void Awake()
+    {
+        originLineRenderer = lineRendererPrefab.GetComponent<LineRenderer>();
+    }
 
     public LineRenderer requireLineRenderer()
     {
@@ -18,7 +24,11 @@ public class GJKLineTool : MonoBehaviour
             renderer.sortingOrder = lineRendererIndex;
             lineRenderers.Add(renderer);
         }
-        return lineRenderers[lineRendererIndex++];
+
+        var lineRenderer = lineRenderers[lineRendererIndex++];
+        lineRenderer.startWidth = originLineRenderer.startWidth;
+        lineRenderer.endWidth = originLineRenderer.endWidth;
+        return lineRenderer;
     }
 
     public void BeginDraw()
@@ -26,12 +36,33 @@ public class GJKLineTool : MonoBehaviour
         lineRendererIndex = 0;
     }
 
-    public void DrawPolygon(List<Vector2> vertices, Color color)
+    public LineRenderer DrawLine(Vector2 a, Vector2 b, Color color)
+    {
+        LineRenderer lineRenderer = requireLineRenderer();
+        lineRenderer.startColor = color;
+        lineRenderer.endColor = color;
+
+        lineRenderer.positionCount = 2;
+        lineRenderer.SetPosition(0, a);
+
+        if(Vector2.Distance(a, b) > float.Epsilon)
+        {
+            lineRenderer.SetPosition(1, b);
+        }
+        else
+        {
+            // 做一点偏移，避免重合看不见
+            lineRenderer.SetPosition(1, b + new Vector2(0.05f, 0));
+        }
+        return lineRenderer;
+    }
+
+    public LineRenderer DrawPolygon(List<Vector2> vertices, Color color)
     {
         int n = vertices.Count;
         if (n == 0)
         {
-            return;
+            return null;
         }
 
         LineRenderer lineRenderer = requireLineRenderer();
@@ -52,6 +83,7 @@ public class GJKLineTool : MonoBehaviour
         {
             lineRenderer.SetPosition(n, vertices[0]);
         }
+        return lineRenderer;
     }
 
     public void EndDraw()

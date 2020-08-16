@@ -14,8 +14,8 @@ namespace gjk2d
             float cross = ab.x * ac.y - ab.y * ac.x;
             return cross > 0 ? 1 : (cross < 0 ? -1 : 0);
         }
-        
-        /// 获得线段ab到原点的最近距离。最近距离可以是垂点，也可以是线段的端点。
+
+        /// 获得原点到线段ab的最近距离。最近距离可以是垂点，也可以是线段的端点。
         public static Vector2 getClosestPointToOrigin(Vector2 a, Vector2 b)
         {
             Vector2 ab = b - a;
