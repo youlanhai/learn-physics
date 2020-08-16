@@ -7,7 +7,7 @@
 ## 2 分离碰撞轴检测
 ## 3 [GJK碰撞检测基础](03-gjk/README.md)
 ## 4 [GJK计算最近距离](04-gjk-closest-point/README.md)
-## 5 GJK计算穿透向量(EPA)
+## 5 [GJK计算穿透向量(EPA)](05-gjk-epa/README.md)
 ## 6 碰撞分离
 
 # 第二部分 空间划分
