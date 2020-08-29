@@ -68,16 +68,17 @@ namespace gjk2d
                     break;
                 }
                 
-                simplex.add(support(direction));
-                yield return null;
-
+                SupportPoint p = support(direction);
                 // 新点与之前的点重合了。也就是沿着dir的方向，已经找不到更近的点了。
-                if (GJKTool.sqrDistance(simplex.getLast(), simplex.get(0)) < epsilon ||
-                    GJKTool.sqrDistance(simplex.getLast(), simplex.get(1)) < epsilon)
+                if (GJKTool.sqrDistance(p.point, simplex.get(0)) < epsilon ||
+                    GJKTool.sqrDistance(p.point, simplex.get(1)) < epsilon)
                 {
                     isCollision = false;
                     break;
                 }
+
+                simplex.add(p);
+                yield return null;
 
                 // 单形体包含原点了
                 if (simplex.contains(Vector2.zero))
