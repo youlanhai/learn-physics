@@ -2,6 +2,8 @@
 ====================
 又挖了个坑，有时间慢慢填吧。目录暂且如此，后面随着内容的丰富，可能会有一些变动。
 
+详细文章内容，可以看我的博客: https://blog.csdn.net/you_lan_hai/article/details/108305631
+
 ![gjk-1](03-gjk/Image/gjk-1.gif)
 ![gjk-2](04-gjk-closest-point/Image/gjk2-1.gif)
 ![gjk-3](05-gjk-epa/Image/gjk3-1.gif)
