@@ -4,17 +4,17 @@
 
 详细文章内容，可以看我的博客: https://blog.csdn.net/you_lan_hai/article/details/108305631
 
-![gjk-1](03-gjk/Image/gjk-1.gif)
-![gjk-2](04-gjk-closest-point/Image/gjk2-1.gif)
-![gjk-3](05-gjk-epa/Image/gjk3-1.gif)
+![gjk-1](Assets/03-gjk/Image/gjk-1.gif)
+![gjk-2](Assets/04-gjk-closest-point/Image/gjk2-1.gif)
+![gjk-3](Assets/05-gjk-epa/Image/gjk3-1.gif)
 
 
 # 第一部分 基础碰撞检测
 ## 1 基础内容
 ## 2 分离碰撞轴检测
-## 3 [GJK碰撞检测基础](03-gjk/README.md)
-## 4 [GJK计算最近距离](04-gjk-closest-point/README.md)
-## 5 [GJK计算穿透向量(EPA)](05-gjk-epa/README.md)
+## 3 [GJK碰撞检测基础](Assets/03-gjk/README.md)
+## 4 [GJK计算最近距离](Assets/04-gjk-closest-point/README.md)
+## 5 [GJK计算穿透向量(EPA)](Assets/05-gjk-epa/README.md)
 ## 6 碰撞分离
 
 # 第二部分 空间划分
