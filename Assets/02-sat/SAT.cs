@@ -9,10 +9,10 @@ namespace Sample02
     {
         public static bool queryCollision(Shape shapeA, Shape shapeB)
         {
-            return collisionTest(shapeA, shapeB) && collisionTest(shapeB, shapeA);
+            return satTestHalf(shapeA, shapeB) && satTestHalf(shapeB, shapeA);
         }
         
-        static bool collisionTest(Shape shapeA, Shape shapeB)
+        static bool satTestHalf(Shape shapeA, Shape shapeB)
         {
             // 计算shape本身在边那一侧
             int side = whitchSide(shapeA.get(0), shapeA.get(1), shapeA.get(2));

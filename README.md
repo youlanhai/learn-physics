@@ -11,7 +11,7 @@
 
 # 第一部分 基础碰撞检测
 ## 1 基础内容
-## 2 分离碰撞轴检测
+## 2 [分离碰撞轴检测](Assets/02-sat)
 ## 3 [GJK碰撞检测基础](Assets/03-gjk/README.md)
 ## 4 [GJK计算最近距离](Assets/04-gjk-closest-point/README.md)
 ## 5 [GJK计算穿透向量(EPA)](Assets/05-gjk-epa/README.md)
