@@ -20,4 +20,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/05-gjk-epa/05-gjk-epa.unity
     guid: a86a0705bc387bb4b867826f985d9f35
+  - enabled: 1
+    path: Assets/06-seperation/06-seperation.unity
+    guid: 4955378455a854eb99e76797753b86aa
   m_configObjects: {}
