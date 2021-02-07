@@ -378,11 +378,11 @@ namespace Sample05
             e.b = b;
 
             e.normal = GJKTool.getPerpendicularToOrigin(a, b);
-            e.distance = e.normal.magnitude;
-
+            float lengthSq = e.normal.sqrMagnitude;
             // 单位化边
-            if (e.distance > float.Epsilon)
+            if (lengthSq > 0.00001f)
             {
+                e.distance = Mathf.Sqrt(lengthSq);
                 e.normal *= 1.0f / e.distance;
             }
             else
