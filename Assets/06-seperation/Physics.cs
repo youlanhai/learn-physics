@@ -209,16 +209,7 @@ namespace Sample06
                 hash = genHash(e.a.indexA, e.a.indexB),
             };
 
-            ContactInfo b = new ContactInfo
-            {
-                point = gjk.closestOnB,
-                normal = -e.normal,
-                penetration = e.distance,
-                hash = genHash(e.b.indexA, e.b.indexB),
-            };
-
             list.Add(a);
-            //list.Add(b);
         }
 
     }

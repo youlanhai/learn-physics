@@ -62,8 +62,8 @@ namespace Sample06
             bodyA.rotation = 0;
             bodyA.velocity = Vector2.zero;
             bodyA.angleVelocity = 0;
-            bodyA.forceImpulse = new Vector2(1, 0);
-            bodyA.torqueImpulse = 90;
+            //bodyA.forceImpulse = new Vector2(1, 0);
+            //bodyA.torqueImpulse = 90;
             bodyA.updateTransform();
 
             Rigidbody bodyB = physics.rigidbodies[1];
@@ -98,23 +98,21 @@ namespace Sample06
 
         void Update()
         {
-            physics.update(Time.fixedDeltaTime);
-
             lineTool.BeginDraw();
             
             if (inputData.stepByStep)
             {
                 if (Input.GetMouseButtonUp(0))
                 {
-                    UpdateStepByStep();
+                    physics.update(Time.fixedDeltaTime);
                 }
             }
             else
             {
-                UpdateSelection();
-                stepEnumerator = null;
-                gjk.queryCollision(shapes[0], shapes[1]);
+                physics.update(Time.fixedDeltaTime);
             }
+
+            UpdateSelection();
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
@@ -184,7 +182,7 @@ namespace Sample06
         {
             GUILayout.BeginVertical();
             GUILayout.Label(helpContent);
-            //inputData.stepByStep = GUILayout.Toggle(inputData.stepByStep, "分步骤执行(鼠标点击下一步)");
+            inputData.stepByStep = GUILayout.Toggle(inputData.stepByStep, "分步骤执行(鼠标点击下一步)");
             inputData.showMinkowskiSet = GUILayout.Toggle(inputData.showMinkowskiSet, "显示Minkowski集合");
             inputData.showSimplex = GUILayout.Toggle(inputData.showSimplex, "显示单形体");
             inputData.showDirection = GUILayout.Toggle(inputData.showDirection, "显示support方向");
