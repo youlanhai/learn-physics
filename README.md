@@ -15,7 +15,7 @@
 ## 3 [GJK碰撞检测基础](Assets/03-gjk/README.md)
 ## 4 [GJK计算最近距离](Assets/04-gjk-closest-point/README.md)
 ## 5 [GJK计算穿透向量(EPA)](Assets/05-gjk-epa/README.md)
-## 6 碰撞分离
+## 6 [碰撞分离](Assets/06-seperation)
 
 # 第二部分 空间划分
 ## 7 二叉树空间划分(BSP)
