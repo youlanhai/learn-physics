@@ -76,7 +76,7 @@ namespace Sample06
 
         void UpdateMotion()
         {
-            float s = 0.1f;
+            float s = 1f;
             Rigidbody body = physics.rigidbodies[0];
             if (Input.GetKeyDown(KeyCode.W))
             {
@@ -99,7 +99,9 @@ namespace Sample06
         void Update()
         {
             lineTool.BeginDraw();
-            
+
+            physics.maxIteration = inputData.maxIteration;
+
             if (inputData.stepByStep)
             {
                 if (Input.GetMouseButtonUp(0))

@@ -8,27 +8,36 @@ namespace Sample06
     /// </summary>
     public class Rigidbody
     {
+        /// 位移
         public Vector2 position;
-        public float rotation;
-
-        public float mass;
-        public float invMass;
+        /// 移动速度
         public Vector2 velocity;
-        /// 持续作用力
+        /// 质量
+        public float mass;
+        /// 质量的倒数。方便除法计算，对于静态物体，可以认为质量无限大，invMass=0，所有作用力相乘结果都是0。
+        public float invMass;
+        /// 持续作用力。持续影响移动速度
         public Vector2 force;
-        /// 脉冲力
+        /// 脉冲力。仅影响移动速度一次
         public Vector2 forceImpulse;
 
+        /// 旋转角度
+        public float rotation;
+        /// 角速度。单位是度，计算作用力的时候，切记要转换成弧度。
+        public float angleVelocity;
         /// 角动量。相当于旋转质量
         public float inertial;
+        /// 角动量倒数。方便除法计算
         public float invInertial;
-        /// 角速度
-        public float angleVelocity;
-        /// 扭矩力。影响旋转
+        /// 扭矩力。持续的影响旋转速度
         public float torque;
-        /// 扭矩脉冲力
+        /// 扭矩脉冲力。仅影响旋转速度一次
         public float torqueImpulse;
 
+        /// 摩擦力
+        public float fraction = 0.3f;
+
+        /// 坐标变换矩阵。用来变换形状的坐标点。
         public Matrix2D matrix;
 
         public Shape shape;

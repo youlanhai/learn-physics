@@ -13,7 +13,7 @@ namespace Sample06
         /// 最大迭代次数
         public int maxIterCount = 10;
         /// 浮点数误差。
-        public float epsilon = 0.00001f;
+        public float epsilon = 0.0001f;
 
         /// 当前support使用的方向
         public Vector2 direction;
@@ -80,12 +80,12 @@ namespace Sample06
 
             if (!isCollision)
             {
-                ComputeClosetPoint(simplex.getSupport(0), simplex.getSupport(1));
+                computeClosetPoint(simplex.getSupport(0), simplex.getSupport(1));
             }
             else
             {
                 queryEPA();
-                ComputeClosetPoint(currentEpaEdge.a, currentEpaEdge.b);
+                computeClosetPoint(currentEpaEdge.a, currentEpaEdge.b);
             }
 
             return isCollision;
@@ -177,7 +177,7 @@ namespace Sample06
             }
         }
 
-        void ComputeClosetPoint(SupportPoint A, SupportPoint B)
+        void computeClosetPoint(SupportPoint A, SupportPoint B)
         {
             /*
              *  L = AB，是Minkowski差集上的一个边，同时构成A、B两点的顶点也来自各自shape的边。
@@ -199,7 +199,7 @@ namespace Sample06
             Vector2 L = B.point - A.point;
             float sqrDistanceL = L.sqrMagnitude;
             // support点重合了
-            if (sqrDistanceL < 0.0001f)
+            if (sqrDistanceL < epsilon)
             {
                 closestOnA = closestOnB = A.point;
             }
@@ -358,7 +358,7 @@ namespace Sample06
             e.normal = GJKTool.getPerpendicularToOrigin(a.point, b.point);
             float lengthSq = e.normal.sqrMagnitude;
             // 单位化边
-            if (lengthSq > 0.00001f)
+            if (lengthSq > 0.0001f)
             {
                 e.distance = Mathf.Sqrt(lengthSq);
                 e.normal *= 1.0f / e.distance;

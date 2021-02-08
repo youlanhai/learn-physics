@@ -30,5 +30,7 @@ namespace Sample06
         public bool showDirection = true;
         public bool showPenetrateVector = true;
         public bool showEPAEdges = true;
+
+        public int maxIteration = 10;
     }
 }

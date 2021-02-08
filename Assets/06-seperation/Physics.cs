@@ -19,8 +19,7 @@ namespace Sample06
         public float forceNormal;
         /// 切线方向的分离力
         public float forceTangent;
-        /// 偏移力
-        public float Fb;
+
         public float bias;
         /// 法线方向质量系数
         public float massNormal;
@@ -32,9 +31,9 @@ namespace Sample06
     {
         /// 速度衰减
         public float damping = 0.1f;
-        public float fraction = 0.3f;
         public float allowedPenetration = 0.01f;
         public float biasFactor = 0.1f;
+        public int maxIteration = 10;
 
         public List<Rigidbody> rigidbodies = new List<Rigidbody>();
         public List<Shape> shapes = new List<Shape>();
@@ -89,7 +88,12 @@ namespace Sample06
 
             if (stage == CollisionStage.Stay)
             {
-                doSeperation(dt);
+                doPreSeperation(dt);
+
+                for(int i = 0; i < maxIteration; ++i)
+                {
+                    doPostSeperation(dt);
+                }
             }
 
             foreach (var body in rigidbodies)
@@ -119,7 +123,6 @@ namespace Sample06
                         {
                             info.forceNormal = old.forceNormal;
                             info.forceTangent = old.forceTangent;
-                            info.Fb = old.Fb;
                         }
                     }
 
@@ -135,7 +138,7 @@ namespace Sample06
             }
         }
 
-        void doSeperation(float dt)
+        void doPreSeperation(float dt)
         {
             Rigidbody a = rigidbodies[0];
             Rigidbody b = rigidbodies[1];
@@ -159,35 +162,39 @@ namespace Sample06
                 b.applyImpulse(F);
                 b.applyTorqueImpulse(contact.point, F);
             }
+        }
 
-            for (int i = 0; i < 5; ++i)
+        void doPostSeperation(float dt)
+        {
+            Rigidbody a = rigidbodies[0];
+            Rigidbody b = rigidbodies[1];
+            float fraction = 1.0f - (a.fraction + b.fraction) * 0.5f;
+
+            foreach (var contact in contacts)
             {
-                foreach (var contact in contacts)
-                {
-                    Vector2 relativeVelocity = a.getPointVelocity(contact.point) - b.getPointVelocity(contact.point);
+                Vector2 relativeVelocity = a.getPointVelocity(contact.point) - b.getPointVelocity(contact.point);
 
-                    Vector2 normal = contact.normal;
-                    float vn = Vector2.Dot(relativeVelocity, normal);
-                    float dFn = (vn + contact.bias) * contact.massNormal;
-                    float oldFn = contact.forceNormal;
-                    contact.forceNormal = Mathf.Max(oldFn + dFn, 0);
-                    dFn = contact.forceNormal - oldFn;
+                Vector2 normal = contact.normal;
+                float vn = Vector2.Dot(relativeVelocity, normal);
+                float dFn = (vn + contact.bias) * contact.massNormal;
+                float oldFn = contact.forceNormal;
+                contact.forceNormal = Mathf.Max(oldFn + dFn, 0);
+                dFn = contact.forceNormal - oldFn;
 
-                    Vector2 tangent = new Vector2(-normal.y, normal.x);
-                    float vt = Vector2.Dot(relativeVelocity, tangent);
-                    float dFt = vt * contact.massTangent;
-                    float maxFt = fraction * contact.forceNormal;
-                    float oldFt = contact.forceTangent;
-                    contact.forceTangent = Mathf.Clamp(oldFt + dFt, -maxFt, maxFt);
-                    dFt = contact.forceTangent - oldFt;
+                Vector2 tangent = new Vector2(-normal.y, normal.x);
+                float vt = Vector2.Dot(relativeVelocity, tangent);
+                float dFt = vt * contact.massTangent;
+                float maxFt = fraction * contact.forceNormal;
+                float oldFt = contact.forceTangent;
+                contact.forceTangent = Mathf.Clamp(oldFt + dFt, -maxFt, maxFt);
+                dFt = contact.forceTangent - oldFt;
 
-                    Vector2 F = normal * dFn + tangent * dFt;
-                    a.applyImpulse(-F);
-                    a.applyTorqueImpulse(contact.point, -F);
+                Vector2 F = normal * dFn + tangent * dFt;
+                a.applyImpulse(-F);
+                a.applyTorqueImpulse(contact.point, -F);
 
-                    b.applyImpulse(F);
-                    b.applyTorqueImpulse(contact.point, F);
-                }
+                b.applyImpulse(F);
+                b.applyTorqueImpulse(contact.point, F);
             }
         }
 
@@ -198,9 +205,7 @@ namespace Sample06
 
         void getContacts(List<ContactInfo> list)
         {
-            contacts.Clear();
             Edge e = gjk.currentEpaEdge;
-
             ContactInfo a = new ContactInfo
             {
                 point = gjk.closestOnA,
@@ -209,6 +214,7 @@ namespace Sample06
                 hash = genHash(e.a.indexA, e.a.indexB),
             };
 
+            list.Clear();
             list.Add(a);
         }
 
