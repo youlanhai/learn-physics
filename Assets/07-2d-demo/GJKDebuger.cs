@@ -9,6 +9,7 @@ namespace Sample07
     {
         public GJKInputData inputData;
         public GJKLineTool lineTool;
+        public int collisionCount = 0;
 
         Physics physics;
         GJK gjk;
@@ -32,14 +33,21 @@ namespace Sample07
             "<color=#ff00ff>当前EPA选择的边</color>; " +
             "<color=#5C91C4>EPA边界</color>; "
             );
-        
+
+        public List<Vector2> boxVertices = new List<Vector2>
+        {
+            new Vector2(-0.5f,  0.5f),
+            new Vector2(-0.5f, -0.5f),
+            new Vector2( 0.5f, -0.5f),
+            new Vector2( 0.5f,  0.5f),
+        };
+
         void Start()
         {
             inputData = GetComponent<GJKInputData>();
             lineTool = GetComponent<GJKLineTool>();
 
             physics = new Physics();
-            gjk = physics.gjk;
             shapes = physics.shapes;
 
             Rigidbody bodyA = new Rigidbody(1, 1);
@@ -49,10 +57,34 @@ namespace Sample07
 
             Rigidbody bodyB = new Rigidbody(2, 1);
             Shape shapeB = new Shape(bodyB);
-            shapeB.originVertices.AddRange(inputData.vertices2);
+            shapeB.originVertices.AddRange(inputData.vertices1);
             physics.addRigidbody(bodyB);
 
+            Camera camera = Camera.main;
+            float halfHeight = camera.orthographicSize;
+            float halfWidth = camera.aspect * halfHeight;
+
+            // left
+            CreateWall(new Vector2(-halfWidth, 0), new Vector2(1, halfHeight * 2));
+            // right
+            CreateWall(new Vector2(halfWidth, 0), new Vector2(1, halfHeight * 2));
+            // top
+            CreateWall(new Vector2(0, halfHeight), new Vector2(halfWidth * 2, 1));
+            // botom
+            CreateWall(new Vector2(0, -halfHeight), new Vector2(halfWidth * 2, 1));
+
             ResetPosition();
+        }
+
+        void CreateWall(Vector2 pos, Vector2 size)
+        {
+            Rigidbody body = new Rigidbody(float.PositiveInfinity, float.PositiveInfinity);
+            body.position = pos;
+            body.scale = size;
+            
+            Shape shape = new Shape(body);
+            shape.originVertices.AddRange(boxVertices);
+            physics.addRigidbody(body);
         }
 
         void ResetPosition()
@@ -114,6 +146,7 @@ namespace Sample07
                 physics.update(Time.fixedDeltaTime);
             }
 
+            collisionCount = physics.collisions.Count;
             UpdateSelection();
 
             if (Input.GetKeyDown(KeyCode.Space))
@@ -131,6 +164,33 @@ namespace Sample07
             {
                 var points = MinkowskiTool.computeMinkowskiSet(shapes[0], shapes[1]);
                 DrawPolygon(points, Color.grey);
+            }
+
+            DrawGJK();
+
+            Rigidbody body = physics.rigidbodies[0];
+            lineTool.DrawLine(body.position, body.position + body.velocity, Color.red, Color.green);
+            body = physics.rigidbodies[1];
+            lineTool.DrawLine(body.position, body.position + body.velocity, Color.red, Color.green);
+
+            lineTool.EndDraw();
+        }
+
+        void DrawGJK()
+        {
+            gjk = null;
+            if (physics.collisions.Count > 0)
+            {
+                foreach(var pair in physics.collisions)
+                {
+                    gjk = pair.Value.gjk;
+                    break;
+                }
+            }
+
+            if (gjk == null)
+            {
+                return;
             }
 
             if (inputData.showSimplex)
@@ -172,12 +232,6 @@ namespace Sample07
                 }
             }
 
-            Rigidbody body = physics.rigidbodies[0];
-            lineTool.DrawLine(body.position, body.position + body.velocity, Color.red, Color.green);
-            body = physics.rigidbodies[1];
-            lineTool.DrawLine(body.position, body.position + body.velocity, Color.red, Color.green);
-
-            lineTool.EndDraw();
         }
 
         private void OnGUI()
@@ -236,10 +290,10 @@ namespace Sample07
                 {
                     color = new Color(1, 0, 1);
                 }
-                else if (gjk.isCollision)
-                {
-                    color = Color.red;
-                }
+                //else if (shapes[i].isCollision)
+                //{
+                //    color = Color.red;
+                //}
                 DrawPolygon(shapes[i].vertices, color);
             }
         }

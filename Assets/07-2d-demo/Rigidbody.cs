@@ -8,6 +8,7 @@ namespace Sample07
     /// </summary>
     public class Rigidbody
     {
+        public int id;
         /// 位移
         public Vector2 position;
         /// 移动速度
@@ -37,11 +38,15 @@ namespace Sample07
         /// 摩擦力
         public float fraction = 0.3f;
 
+        public Vector2 scale = Vector2.one;
+
         /// 坐标变换矩阵。用来变换形状的坐标点。
         public Matrix2D matrix;
 
         public Shape shape;
         public Physics physics;
+
+        public bool isStatic { get { return invMass == 0; } }
 
         public Rigidbody(float mass, float inertial)
         {
@@ -103,7 +108,7 @@ namespace Sample07
 
         public void updateTransform()
         {
-            matrix.setTransform(position, rotation, Vector2.one);
+            matrix.setTransform(position, rotation, scale);
             shape.updateTransform();
         }
 

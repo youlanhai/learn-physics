@@ -3,30 +3,6 @@ using System.Collections.Generic;
 
 namespace Sample07
 {
-    /// 碰撞点信息
-    class ContactInfo
-    {
-        /// 碰撞点
-        public Vector2 point;
-        /// 穿透方向
-        public Vector2 normal;
-        /// 穿透深度
-        public float penetration;
-        /// 碰撞点的hash值，用来累加碰撞结果
-        public int hash;
-
-        /// 法线方向的分离力
-        public float forceNormal;
-        /// 切线方向的分离力
-        public float forceTangent;
-
-        public float bias;
-        /// 法线方向质量系数
-        public float massNormal;
-        /// 切线方向的质量系数
-        public float massTangent;
-    }
-
     public class Physics
     {
         /// 速度衰减
@@ -38,22 +14,16 @@ namespace Sample07
         public List<Rigidbody> rigidbodies = new List<Rigidbody>();
         public List<Shape> shapes = new List<Shape>();
 
-        public GJK gjk = new GJK();
+        public Dictionary<int, CollisionPair> collisions = new Dictionary<int, CollisionPair>();
 
-        enum CollisionStage
-        {
-            None,
-            Enter,
-            Stay,
-            Exit,
-        }
-
-        CollisionStage stage;
-        List<ContactInfo> contacts = new List<ContactInfo>();
+        int idCounter = 0;
+        int updateIndex = 0;
+        public List<int> removeCache = new List<int>();
 
         public void addRigidbody(Rigidbody body)
         {
             body.physics = this;
+            body.id = ++idCounter;
             rigidbodies.Add(body);
             shapes.Add(body.shape);
 
@@ -62,39 +32,15 @@ namespace Sample07
 
         public void update(float dt)
         {
-            foreach(var body in rigidbodies)
+            ++updateIndex;
+
+            foreach (var body in rigidbodies)
             {
                 body.preUpdate(dt);
             }
 
-            doCollisionTest();
-
-            // 可以在这里派发事件
-            switch(stage)
-            {
-                case CollisionStage.Enter:
-                    stage = CollisionStage.Stay;
-                    Debug.Log("collisionEnter");
-                    break;
-                case CollisionStage.Exit:
-                    stage = CollisionStage.None;
-                    Debug.Log("collisionExit");
-                    break;
-                case CollisionStage.Stay:
-                    break;
-                default:
-                    break;
-            }
-
-            if (stage == CollisionStage.Stay)
-            {
-                doPreSeperation(dt);
-
-                for(int i = 0; i < maxIteration; ++i)
-                {
-                    doPostSeperation(dt);
-                }
-            }
+            updateCollisionTest();
+            updateSeperation(dt);
 
             foreach (var body in rigidbodies)
             {
@@ -102,47 +48,135 @@ namespace Sample07
             }
         }
 
-        void doCollisionTest()
+        void updateCollisionTest()
         {
-            if (gjk.queryCollision(shapes[0], shapes[1]))
+            for (int i = 0; i < shapes.Count - 1; ++i)
             {
-                if (stage == CollisionStage.None)
+                for (int k = i + 1; k < shapes.Count; ++k)
                 {
-                    stage = CollisionStage.Enter;
-                    getContacts(contacts);
-                }
-                else
-                {
-                    List<ContactInfo> newContacts = new List<ContactInfo>();
-                    getContacts(newContacts);
-
-                    foreach (var info in newContacts)
-                    {
-                        ContactInfo old = contacts.Find((v) => v.hash == info.hash);
-                        if (old != null)
-                        {
-                            info.forceNormal = old.forceNormal;
-                            info.forceTangent = old.forceTangent;
-                        }
-                    }
-
-                    contacts = newContacts;
-                }
-            }
-            else
-            {
-                if (stage == CollisionStage.Stay)
-                {
-                    stage = CollisionStage.Exit;
+                    doCollisionTest(shapes[i], shapes[k]);
                 }
             }
         }
 
-        void doPreSeperation(float dt)
+        void updateSeperation(float dt)
         {
-            Rigidbody a = rigidbodies[0];
-            Rigidbody b = rigidbodies[1];
-            foreach (var contact in contacts)
+            foreach (var pair in collisions)
+            {
+                CollisionPair collision = pair.Value;
+                if (collision.updateIndex != updateIndex)
+                {
+                    collision.stage = CollisionStage.Exit;
+                }
+
+                // 可以在这里派发事件
+                switch (collision.stage)
+                {
+                    case CollisionStage.Enter:
+                        collision.stage = CollisionStage.Stay;
+                        Debug.Log("collisionEnter");
+                        break;
+                    case CollisionStage.Exit:
+                        collision.stage = CollisionStage.None;
+                        Debug.Log("collisionExit");
+                        removeCache.Add(pair.Key);
+                        break;
+                    case CollisionStage.Stay:
+                        break;
+                    default:
+                        break;
+                }
+
+                if (collision.stage == CollisionStage.Stay)
+                {
+                    doPreSeperation(dt, collision);
+                }
+            }
+
+            foreach (int hash in removeCache)
+            {
+                collisions.Remove(hash);
+            }
+            removeCache.Clear();
+
+            for (int i = 0; i < maxIteration; ++i)
+            {
+                foreach (var pair in collisions)
+                {
+                    doPostSeperation(dt, pair.Value);
+                }
+            }
+        }
+
+        void doCollisionTest(Shape shapeA, Shape shapeB)
+        {
+            if (shapeA.rigidbody.isStatic && shapeB.rigidbody.isStatic)
+            {
+                return;
+            }
+
+            if (shapeA.rigidbody.id > shapeB.rigidbody.id)
+            {
+                Shape temp = shapeA;
+                shapeA = shapeB;
+                shapeB = temp;
+            }
+
+            if (!shapeA.bounds.Overlaps(shapeB.bounds))
+            {
+                return;
+            }
+            
+            GJK gjk = new GJK();
+            if (!gjk.queryCollision(shapeA, shapeB))
+            {
+                return;
+            }
+            
+            int hash = genHash(shapeA.rigidbody.id, shapeB.rigidbody.id);
+
+            CollisionPair collision;
+            if (!collisions.TryGetValue(hash, out collision))
+            {
+                collision = new CollisionPair
+                {
+                    rigidbodyA = shapeA.rigidbody,
+                    rigidbodyB = shapeB.rigidbody,
+                };
+                collisions.Add(hash, collision);
+            }
+            collision.gjk = gjk;
+            collision.updateIndex = updateIndex;
+
+            if (collision.stage == CollisionStage.None)
+            {
+                collision.stage = CollisionStage.Enter;
+                getContacts(gjk, collision.contacts);
+            }
+            else
+            {
+                List<ContactInfo> newContacts = new List<ContactInfo>();
+                getContacts(gjk, newContacts);
+
+                foreach (var info in newContacts)
+                {
+                    ContactInfo old = collision.contacts.Find((v) => v.hash == info.hash);
+                    if (old != null)
+                    {
+                        info.forceNormal = old.forceNormal;
+                        info.forceTangent = old.forceTangent;
+                    }
+                }
+
+                collision.contacts = newContacts;
+            }
+        }
+
+        void doPreSeperation(float dt, CollisionPair collision)
+        {
+            Rigidbody a = collision.rigidbodyA;
+            Rigidbody b = collision.rigidbodyB;
+            foreach (var contact in collision.contacts)
             {
                 Vector2 normal = contact.normal;
                 Vector2 tangent = new Vector2(-normal.y, normal.x);
@@ -164,13 +198,13 @@ namespace Sample07
             }
         }
 
-        void doPostSeperation(float dt)
+        void doPostSeperation(float dt, CollisionPair collision)
         {
-            Rigidbody a = rigidbodies[0];
-            Rigidbody b = rigidbodies[1];
+            Rigidbody a = collision.rigidbodyA;
+            Rigidbody b = collision.rigidbodyB;
             float fraction = 1.0f - (a.fraction + b.fraction) * 0.5f;
 
-            foreach (var contact in contacts)
+            foreach (var contact in collision.contacts)
             {
                 Vector2 relativeVelocity = a.getPointVelocity(contact.point) - b.getPointVelocity(contact.point);
 
@@ -203,7 +237,7 @@ namespace Sample07
             return (indexA << 16) | (indexB & 0xffff);
         }
 
-        void getContacts(List<ContactInfo> list)
+        void getContacts(GJK gjk, List<ContactInfo> list)
         {
             Edge e = gjk.currentEpaEdge;
             ContactInfo a = new ContactInfo
