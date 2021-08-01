@@ -383,12 +383,6 @@ MonoBehaviour:
   - {x: -0.6, y: -0.8}
   - {x: 0.6, y: -0.8}
   - {x: 1, y: 0.3}
-  vertices2:
-  - {x: 0, y: 1}
-  - {x: -1, y: 0.3}
-  - {x: -0.6, y: -0.8}
-  - {x: 0.6, y: -0.8}
-  - {x: 1, y: 0.3}
   stepByStep: 0
   showMinkowskiSet: 1
   showSimplex: 1
@@ -439,6 +433,11 @@ MonoBehaviour:
   inputData: {fileID: 0}
   lineTool: {fileID: 0}
   collisionCount: 0
+  boxVertices:
+  - {x: -0.5, y: 0.5}
+  - {x: -0.5, y: -0.5}
+  - {x: 0.5, y: -0.5}
+  - {x: 0.5, y: 0.5}
 --- !u!1 &534669902
 GameObject:
   m_ObjectHideFlags: 0
