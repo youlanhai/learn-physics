@@ -101,23 +101,46 @@ namespace Sample05
                 // EPA算法计算穿透向量
                 simplexEdge.initEdges(simplex);
 
-                for (int i = 0; i < maxIterCount; ++i)
+                // 先检查原点是否在某个边上，避免因为无法计算出边的方向，从而引起计算错误
+                if (simplexEdge.edges.Count < 3)
                 {
-                    Edge e = simplexEdge.findClosestEdge();
-                    currentEpaEdge = e;
-                    penetrationVector = e.normal * e.distance;
-                    yield return null;
-
-                    Vector2 point = support(e.normal).point;
-                    float distance = Vector2.Dot(point, e.normal);
-                    if (distance - e.distance < epsilon)
+                    currentEpaEdge = simplexEdge.edges[0];
+                }
+                else
+                {
+                    foreach (Edge e in simplexEdge.edges)
                     {
-                        penetrationVector = e.normal * distance;
-                        break;
+                        if (e.distance < float.Epsilon)
+                        {
+                            currentEpaEdge = e;
+                            break;
+                        }
                     }
+                }
 
-                    simplexEdge.insertEdgePoint(e, point);
-                    yield return null;
+                if (currentEpaEdge != null)
+                {
+                    penetrationVector = currentEpaEdge.normal * currentEpaEdge.distance;
+                }
+                else
+                {
+                    for (int i = 0; i < maxIterCount; ++i)
+                    {
+                        Edge e = simplexEdge.findClosestEdge();
+                        currentEpaEdge = e;
+                        penetrationVector = e.normal * e.distance;
+                        yield return null;
+
+                        Vector2 point = support(e.normal).point;
+                        float distance = Vector2.Dot(point, e.normal);
+                        if (distance - e.distance < epsilon)
+                        {
+                            break;
+                        }
+
+                        simplexEdge.insertEdgePoint(e, point);
+                        yield return null;
+                    }
                 }
             }
         }

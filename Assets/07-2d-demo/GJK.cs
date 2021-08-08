@@ -51,7 +51,7 @@ namespace Sample07
             for(int i = 0; i < maxIterCount; ++i)
             {
                 // 方向接近于0，说明原点就在边上
-                if(direction.sqrMagnitude < epsilon)
+                if(direction.sqrMagnitude < float.Epsilon)
                 {
                     isCollision = true;
                     break;
@@ -86,6 +86,7 @@ namespace Sample07
             {
                 queryEPA();
                 computeClosetPoint(currentEpaEdge.a, currentEpaEdge.b);
+                penetrationVector = currentEpaEdge.normal * currentEpaEdge.distance;
             }
 
             return isCollision;
@@ -97,22 +98,34 @@ namespace Sample07
             simplexEdge.initEdges(simplex);
 
             currentEpaEdge = null;
+
+            // 先检查原点是否在某个边上，避免因为无法计算出边的方向，从而引起计算错误
+            if (simplexEdge.edges.Count < 3)
+            {
+                currentEpaEdge = simplexEdge.edges[0];
+                return;
+            }
+            else
+            {
+                foreach (Edge e in simplexEdge.edges)
+                {
+                    if (e.distance < float.Epsilon)
+                    {
+                        currentEpaEdge = e;
+                        return;
+                    }
+                }
+            }
+            
             for (int i = 0; i < maxIterCount; ++i)
             {
                 Edge e = simplexEdge.findClosestEdge();
                 currentEpaEdge = e;
-                if (e == null)
-                {
-                    break;
-                }
-
-                penetrationVector = e.normal * e.distance;
 
                 SupportPoint point = support(e.normal);
                 float distance = Vector2.Dot(point.point, e.normal);
                 if (distance - e.distance < epsilon)
                 {
-                    penetrationVector = e.normal * distance;
                     break;
                 }
 
@@ -358,7 +371,7 @@ namespace Sample07
             e.normal = GJKTool.getPerpendicularToOrigin(a.point, b.point);
             float lengthSq = e.normal.sqrMagnitude;
             // 单位化边
-            if (lengthSq > 0.0001f)
+            if (lengthSq > float.Epsilon)
             {
                 e.distance = Mathf.Sqrt(lengthSq);
                 e.normal *= 1.0f / e.distance;

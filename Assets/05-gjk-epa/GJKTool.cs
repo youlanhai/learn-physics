@@ -51,13 +51,19 @@ namespace Sample05
             }
         }
 
-        /// 获得原点到直线ab的垂点
+        /// 获得原点到直线ab的垂点c。(c - o)就是原点到ab的垂线
         public static Vector2 getPerpendicularToOrigin(Vector2 a, Vector2 b)
         {
             Vector2 ab = b - a;
             Vector2 ao = Vector2.zero - a;
 
-            float projection = Vector2.Dot(ab, ao) / ab.sqrMagnitude;
+            float sqrLength = ab.sqrMagnitude;
+            if (sqrLength < float.Epsilon)
+            {
+                return Vector2.zero;
+            }
+
+            float projection = Vector2.Dot(ab, ao) / sqrLength;
             return a + ab * projection;
         }
 
