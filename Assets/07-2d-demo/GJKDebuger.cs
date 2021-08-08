@@ -10,6 +10,7 @@ namespace Sample07
         public GJKInputData inputData;
         public GJKLineTool lineTool;
         public int collisionCount = 0;
+        public bool verbose = false;
 
         Physics physics;
         GJK gjk;
@@ -133,6 +134,7 @@ namespace Sample07
             lineTool.BeginDraw();
 
             physics.maxIteration = inputData.maxIteration;
+            physics.verbose = verbose;
 
             if (inputData.stepByStep)
             {

@@ -18,7 +18,9 @@ namespace Sample07
 
         int idCounter = 0;
         int updateIndex = 0;
-        public List<int> removeCache = new List<int>();
+        List<int> removeCache = new List<int>();
+
+        public bool verbose = false;
 
         public void addRigidbody(Rigidbody body)
         {
@@ -170,6 +172,13 @@ namespace Sample07
 
                 collision.contacts = newContacts;
             }
+
+            var contact = collision.contacts[0];
+            if (verbose)
+            {
+                Debug.LogFormat("Collision Test: {0}-{1}. penetration: {2}, contact: {3}: {4}, {5}",
+                    collision.rigidbodyA.id, collision.rigidbodyB.id, gjk.penetrationVector, contact.hash, contact.normal, contact.penetration);
+            }
         }
 
         void doPreSeperation(float dt, CollisionPair collision)
@@ -195,6 +204,11 @@ namespace Sample07
 
                 b.applyImpulse(F);
                 b.applyTorqueImpulse(contact.point, F);
+
+                if (verbose)
+                {
+                    Debug.LogFormat("Pre seperation: {0}-{1}. contact: {2}, last force: {3}, bias: {4}", a.id, b.id, contact.hash, F, contact.bias);
+                }
             }
         }
 
@@ -206,6 +220,7 @@ namespace Sample07
 
             foreach (var contact in collision.contacts)
             {
+                // 计算分离力
                 Vector2 relativeVelocity = a.getPointVelocity(contact.point) - b.getPointVelocity(contact.point);
 
                 Vector2 normal = contact.normal;
@@ -215,6 +230,16 @@ namespace Sample07
                 contact.forceNormal = Mathf.Max(oldFn + dFn, 0);
                 dFn = contact.forceNormal - oldFn;
 
+                Vector2 F = normal * dFn;
+                a.applyImpulse(-F);
+                a.applyTorqueImpulse(contact.point, -F);
+
+                b.applyImpulse(F);
+                b.applyTorqueImpulse(contact.point, F);
+
+                // 计算摩擦力
+                relativeVelocity = a.getPointVelocity(contact.point) - b.getPointVelocity(contact.point);
+
                 Vector2 tangent = new Vector2(-normal.y, normal.x);
                 float vt = Vector2.Dot(relativeVelocity, tangent);
                 float dFt = vt * contact.massTangent;
@@ -223,12 +248,17 @@ namespace Sample07
                 contact.forceTangent = Mathf.Clamp(oldFt + dFt, -maxFt, maxFt);
                 dFt = contact.forceTangent - oldFt;
 
-                Vector2 F = normal * dFn + tangent * dFt;
+                F = tangent * dFt;
                 a.applyImpulse(-F);
                 a.applyTorqueImpulse(contact.point, -F);
 
                 b.applyImpulse(F);
                 b.applyTorqueImpulse(contact.point, F);
+
+                if (verbose)
+                {
+                    Debug.LogFormat("Post seperation: {0}-{1}. contact: {2}, fn: {3}, ft: {4}", a.id, b.id, contact.hash, dFn, dFt);
+                }
             }
         }
 
