@@ -46,4 +46,13 @@ namespace Sample07
 
         public GJK gjk;
     }
+
+    public class CollisionInfo
+    {
+        public Rigidbody rigidbody;
+        public Entity entity;
+        public Vector2 point;
+        public Vector2 normal;
+        public float penetration;
+    }
 }

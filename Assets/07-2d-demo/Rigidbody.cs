@@ -45,6 +45,7 @@ namespace Sample07
 
         public Shape shape;
         public Physics physics;
+        public Entity entity;
 
         public bool isStatic { get { return invMass == 0; } }
 
@@ -138,6 +139,15 @@ namespace Sample07
         {
             Vector2 radius = point - position;
             angleVelocity += GJKTool.cross(radius, torque) * Mathf.Rad2Deg * invInertial;
+        }
+
+        public void sleep()
+        {
+            velocity.Set(0, 0);
+            angleVelocity = 0;
+
+            force.Set(0, 0);
+            forceImpulse.Set(0, 0);
         }
     }
 

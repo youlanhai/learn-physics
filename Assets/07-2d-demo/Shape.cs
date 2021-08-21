@@ -10,10 +10,16 @@ namespace Sample07
         public List<Vector2> originVertices = new List<Vector2>();
         public List<Vector2> vertices = new List<Vector2>();
 
-        public Shape(Rigidbody rigidbody)
+        public int selfMask = 0xffffff;
+        public int collisionMask = 0xffffff;
+
+        public Shape(Rigidbody rigidbody, Vector2[] vertices)
         {
             this.rigidbody = rigidbody;
-            rigidbody.shape = this;
+            if (vertices != null)
+            {
+                originVertices.AddRange(vertices);
+            }
         }
 
         public void updateTransform()

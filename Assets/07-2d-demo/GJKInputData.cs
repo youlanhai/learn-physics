@@ -5,7 +5,7 @@ namespace Sample07
 {
     public class GJKInputData : MonoBehaviour
     {
-        public List<Vector2> vertices1 = new List<Vector2>
+        public Vector2[] vertices1 = new Vector2[]
         {
             new Vector2(0.0f, 1.0f),
             new Vector2(-1.0f, 0.3f),

@@ -14,6 +14,9 @@ namespace Sample07
         public List<Rigidbody> rigidbodies = new List<Rigidbody>();
         public List<Shape> shapes = new List<Shape>();
 
+        List<Rigidbody> pendingAdds = new List<Rigidbody>();
+        List<Rigidbody> pendingRemoves = new List<Rigidbody>();
+
         public Dictionary<int, CollisionPair> collisions = new Dictionary<int, CollisionPair>();
 
         int idCounter = 0;
@@ -24,17 +27,18 @@ namespace Sample07
 
         public void addRigidbody(Rigidbody body)
         {
-            body.physics = this;
-            body.id = ++idCounter;
-            rigidbodies.Add(body);
-            shapes.Add(body.shape);
+            pendingAdds.Add(body);
+        }
 
-            body.updateTransform();
+        public void removeRigidbody(Rigidbody body)
+        {
+            pendingRemoves.Add(body);
         }
 
         public void update(float dt)
         {
             ++updateIndex;
+            flushPendingBodies();
 
             foreach (var body in rigidbodies)
             {
@@ -48,6 +52,8 @@ namespace Sample07
             {
                 body.postUpdate(dt);
             }
+
+            flushPendingBodies();
         }
 
         void updateCollisionTest()
@@ -75,13 +81,13 @@ namespace Sample07
                 switch (collision.stage)
                 {
                     case CollisionStage.Enter:
+                        notifyCollisionEvent(collision);
                         collision.stage = CollisionStage.Stay;
-                        Debug.Log("collisionEnter");
                         break;
                     case CollisionStage.Exit:
                         collision.stage = CollisionStage.None;
-                        Debug.Log("collisionExit");
                         removeCache.Add(pair.Key);
+                        notifyCollisionEvent(collision);
                         break;
                     case CollisionStage.Stay:
                         break;
@@ -113,6 +119,12 @@ namespace Sample07
         void doCollisionTest(Shape shapeA, Shape shapeB)
         {
             if (shapeA.rigidbody.isStatic && shapeB.rigidbody.isStatic)
+            {
+                return;
+            }
+
+            if ((shapeA.selfMask & shapeB.collisionMask) == 0 &&
+                (shapeB.selfMask & shapeA.collisionMask) == 0)
             {
                 return;
             }
@@ -280,6 +292,82 @@ namespace Sample07
 
             list.Clear();
             list.Add(a);
+        }
+
+        /// <summary>
+        /// 添加和删除操作，延迟到物理循环之外进行，避免迭代器失效
+        /// </summary>
+        void flushPendingBodies()
+        {
+            foreach (var body in pendingAdds)
+            {
+                body.physics = this;
+                body.id = ++idCounter;
+                rigidbodies.Add(body);
+                shapes.Add(body.shape);
+
+                body.updateTransform();
+            }
+            pendingAdds.Clear();
+
+            foreach (var body in pendingRemoves)
+            {
+                body.physics = null;
+                rigidbodies.Remove(body);
+                shapes.Remove(body.shape);
+            }
+            pendingRemoves.Clear();
+        }
+
+        void notifyCollisionEvent(CollisionPair info)
+        {
+            ContactInfo contact = info.contacts[0];
+
+            if (info.rigidbodyA.entity != null)
+            {
+                CollisionInfo data = new CollisionInfo
+                {
+                    rigidbody = info.rigidbodyB,
+                    entity = info.rigidbodyB.entity,
+                    point = contact.point,
+                    normal = contact.normal,
+                    penetration = contact.penetration,
+                };
+
+                if (info.stage == CollisionStage.Enter)
+                {
+                    info.rigidbodyA.entity.OnCollisionEnter(data);
+                }
+                else if (info.stage == CollisionStage.Exit)
+                {
+                    info.rigidbodyA.entity.OnCollisionExit(data);
+                }
+
+                contact.penetration = data.penetration;
+            }
+            
+            if (info.rigidbodyB.entity != null)
+            {
+                CollisionInfo data = new CollisionInfo
+                {
+                    rigidbody = info.rigidbodyB,
+                    entity = info.rigidbodyB.entity,
+                    point = contact.point,
+                    normal = -contact.normal,
+                    penetration = contact.penetration,
+                };
+
+                if (info.stage == CollisionStage.Enter)
+                {
+                    info.rigidbodyB.entity.OnCollisionEnter(data);
+                }
+                else if (info.stage == CollisionStage.Exit)
+                {
+                    info.rigidbodyB.entity.OnCollisionExit(data);
+                }
+
+                contact.penetration = data.penetration;
+            }
         }
 
     }
