@@ -34,8 +34,8 @@ namespace Sample07
             float sinR = Mathf.Sin(rotation * Mathf.Deg2Rad);
             float cosR = Mathf.Cos(rotation * Mathf.Deg2Rad);
 
-            a = cosR * scale.x;  b = sinR * scale.x;
-            c = -sinR * scale.y; d = cosR * scale.y;
+            a = cosR * scale.x;  b = -sinR * scale.x;
+            c = sinR * scale.y;  d = cosR * scale.y;
             x = position.x; y = position.y;
         }
 
