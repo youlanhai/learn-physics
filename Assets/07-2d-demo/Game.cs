@@ -15,27 +15,27 @@ namespace Sample07
         List<EventNode> events = new List<EventNode>
         {
             new EventNode1 { time = 0, dir = 1 },
-            new EventNode3 { time = 10},
+            new EventNode2 { time = 10},
             new EventNode1 { time = 20, dir = -1 },
-            new EventNode2 { time = 30, },
+            new EventNode3 { time = 30, },
             new EventNode1 { time = 40, dir = 1 },
             new EventNode4 { time = 50,},
             new EventNode1 { time = 70, dir = -1 },
             new EventNode5 { time = 80,},
-            new EventNode1 { time = 90, dir = -1 },
-            new EventNode1 { time = 100, dir = -1 },
-            new EventNode1 { time = 120, dir = -1 },
-            new EventNode1 { time = 140, dir = -1 },
-            new EventNode1 { time = 160, dir = -1 },
-            new EventNode1 { time = 180, dir = -1 },
-            new EventNode1 { time = 200, dir = -1 },
-            new EventNode1 { time = 220, dir = -1 },
+            new EventNode1 { time = 90, dir = -1, dropAp = 2, },
+            new EventNode1 { time = 100, dir = -1, dropAp = 2 },
+            new EventNode1 { time = 120, dir = -1, dropAp = 2 },
+            new EventNode1 { time = 140, dir = -1, dropAp = 2 },
+            new EventNode1 { time = 160, dir = -1, dropAp = 2 },
+            new EventNode1 { time = 180, dir = -1, dropAp = 2 },
+            new EventNode1 { time = 200, dir = -1, dropAp = 2 },
+            new EventNode1 { time = 220, dir = -1, dropAp = 2 },
             new DummyEvent { time = 600, },
         };
 
         public float gameTime { get; private set; }
         int eventIndex = 0;
-        bool isGameOver = false;
+        public bool isGameOver = false;
         int idCounter = 0;
         public bool isPause;
         public Rect rect;
@@ -209,6 +209,7 @@ namespace Sample07
     public class EventNode1 : EventNode
     {
         public float dir;
+        public int dropAp;
 
         public override void Run()
         {
@@ -219,6 +220,7 @@ namespace Sample07
                 Enemy e = new Enemy
                 {
                     dropHp = 10,
+                    dropAp = dropAp,
                     initData = new EntityInitData
                     {
                         shapeIndex = 2,

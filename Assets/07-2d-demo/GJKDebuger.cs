@@ -7,12 +7,11 @@ namespace Sample07
 
     public class GJKDebuger : MonoBehaviour
     {
-        public GJKInputData inputData;
         public GJKLineTool lineTool;
         public int collisionCount = 0;
         public bool verbose = false;
-
-        public float moveForce = 1.0f;
+        
+        public int maxIteration = 5;
 
         Physics physics;
         List<Shape> shapes;
@@ -39,7 +38,6 @@ namespace Sample07
 
         void Start()
         {
-            inputData = GetComponent<GJKInputData>();
             lineTool = GetComponent<GJKLineTool>();
 
             game = new Game();
@@ -80,25 +78,15 @@ namespace Sample07
         {
             lineTool.BeginDraw();
 
-            physics.maxIteration = inputData.maxIteration;
+            physics.maxIteration = maxIteration;
             physics.verbose = verbose;
 
             if (Input.GetKeyUp(KeyCode.Return))
             {
                 game.Restart();
             }
-            
-            if (inputData.stepByStep)
-            {
-                if (Input.GetMouseButtonUp(0))
-                {
-                    game.Update(Time.deltaTime);
-                }
-            }
-            else
-            {
-                game.Update(Time.deltaTime);
-            }
+
+            game.Update(Time.deltaTime);
 
             collisionCount = physics.collisions.Count;
             UpdateSelection();
@@ -111,13 +99,23 @@ namespace Sample07
         
         private void OnGUI()
         {
-            GUILayout.BeginVertical();
+            GUILayout.BeginArea(new Rect(10, 10, 300, 100));
             GUILayout.Label(helpContent);
             GUILayout.Label("血量: " + game.player.hp);
             GUILayout.Label("分数: " + game.player.score);
-            GUILayout.EndVertical();
+            GUILayout.Label("攻击: " + game.player.attackPoint);
+            GUILayout.EndArea();
+
+            if (game.isGameOver)
+            {
+                Color old = GUI.color;
+                GUI.color = Color.red;
+                Rect rc = new Rect(Screen.width * 0.5f - 100, Screen.height * 0.5f, 200, 30);
+                GUI.Label(rc, "游戏结束! 按回车键继续");
+                GUI.color = old;
+            }
         }
-        
+
         void DrawPolygon(List<Vector2> vertices, Color color)
         {
             lineTool.DrawPolygon(vertices, color);

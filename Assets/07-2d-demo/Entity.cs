@@ -232,6 +232,7 @@ namespace Sample07
     {
         BulletEmiter emiter;
         public int dropHp;
+        public int dropAp;
 
         public override void OnEnterWorld()
         {
@@ -307,9 +308,11 @@ namespace Sample07
             {
                 player.AddScore(1);
 
-                if (target.isDead)
+                Enemy e = target as Enemy;
+                if (target.isDead && e != null)
                 {
-                    player.AddHp((target as Enemy).dropHp);
+                    player.AddHp(e.dropHp);
+                    player.attackPoint += e.dropAp;
                 }
             }
         }

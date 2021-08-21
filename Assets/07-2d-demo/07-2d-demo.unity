@@ -377,6 +377,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c18a4fa6e7b1f4448112e0e0be7d316, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_Name: 
+  m_EditorClassIdentifier: 
   vertices1:
   - {x: 0, y: 1}
   - {x: -1, y: 0.3}
@@ -389,7 +391,7 @@ MonoBehaviour:
   showDirection: 1
   showPenetrateVector: 1
   showEPAEdges: 1
-  maxIteration: 10
+  maxIteration: 5
 --- !u!4 &431183922
 Transform:
   m_ObjectHideFlags: 0
@@ -430,10 +432,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fe710ec4919bcb498377984a5f7e936, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputData: {fileID: 0}
   lineTool: {fileID: 0}
   collisionCount: 0
   verbose: 0
+  maxIteration: 5
   boxVertices:
   - {x: -0.5, y: 0.5}
   - {x: -0.5, y: -0.5}
