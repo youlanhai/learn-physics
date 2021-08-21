@@ -10,8 +10,9 @@ namespace Sample07
         public List<Vector2> originVertices = new List<Vector2>();
         public List<Vector2> vertices = new List<Vector2>();
 
-        public int selfMask = 0xffffff;
-        public int collisionMask = 0xffffff;
+        public Color color = Color.green;
+        public uint selfMask = 0xffffff;
+        public uint collisionMask = 0xffffff;
 
         public Shape(Rigidbody rigidbody, Vector2[] vertices)
         {

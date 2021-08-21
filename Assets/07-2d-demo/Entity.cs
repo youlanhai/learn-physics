@@ -4,15 +4,41 @@ using System.Collections.Generic;
 namespace Sample07
 {
     /// <summary>
-    /// 阵营
+    /// 碰撞掩码
     /// </summary>
-    public enum Camp
+    public static class LayerMask
     {
-        None,
-        Attack,
-        Defence,
+        public const uint NONE = 0;
+        public const uint ENEMY = 1 << 0;
+        public const uint PLAYER = 1 << 1;
+        public const uint BULLET_ENEMY = 1 << 2;
+        public const uint BULLET_PLAYER = 1 << 3;
+        public const uint WALL = 1 << 32;
+
+        /// <summary>
+        /// 敌人不会主动与任何物体发生碰撞
+        /// </summary>
+        public const uint COLLISION_ENEMY = 0;
+
+        /// <summary>
+        /// 敌人子弹会主动碰撞玩家。由子弹来处理伤害逻辑。
+        /// </summary>
+        public const uint COLLISION_BULLET_ENEMY = PLAYER;
+
+        /// <summary>
+        /// 玩家只会主动碰撞敌人和障碍。
+        /// </summary>
+        public const uint COLLISION_PLAYER = ENEMY | WALL;
+
+        /// <summary>
+        /// 子弹只会主动碰撞敌人和障碍
+        /// </summary>
+        public const uint COLLISION_BULLET_PLAYER = ENEMY | WALL;
     }
 
+    /// <summary>
+    /// 初始化Entity需要的数据。可以配置在表里
+    /// </summary>
     public class EntityInitData
     {
         public int shapeIndex;
@@ -21,6 +47,12 @@ namespace Sample07
         public Vector2 scale = new Vector2(1, 1);
         public Vector2 velocity;
         public float angleVelocity;
+        public uint selfMask;
+        public uint collisionMask;
+        public EmiterData emiterData;
+        public float mass = 1;
+        public float inertial = 1;
+        public Color color = Color.green;
     }
 
     /// <summary>
@@ -28,70 +60,261 @@ namespace Sample07
     /// </summary>
     public class Entity
     {
-        public int id;
-        public Camp camp;
         public Rigidbody rigidbody;
         public Game game;
 
-        public int hp;
+        /// <summary>
+        /// 唯一id
+        /// </summary>
+        public int id;
+        /// <summary>
+        /// 血量
+        /// </summary>
+        public int hp { get; private set; }
+        /// <summary>
+        /// 血量上限
+        /// </summary>
         public int hpMax = 1;
-        public int attackPoint = 10;
+        /// <summary>
+        /// 攻击力
+        /// </summary>
+        public int attackPoint = 2;
+        /// <summary>
+        /// 防御力
+        /// </summary>
         public int defencePoint = 0;
+        /// <summary>
+        /// 发生碰撞后，对目标造成的伤害
+        /// </summary>
         public int collisionDamage = 50;
 
+        /// <summary>
+        /// 出生时间
+        /// </summary>
+        public float bornTime = 0;
+        /// <summary>
+        /// 存活时间。超时后自动销毁
+        /// </summary>
+        public float lifeTime = 10;
+
+        /// <summary>
+        /// 是否死亡
+        /// </summary>
+        public bool isDead { get; protected set; }
+        /// <summary>
+        /// 是否处在世界中
+        /// </summary>
+        public bool isInWorld { get; protected set; }
+
+        /// <summary>
+        /// 初始化需要的数据
+        /// </summary>
         public EntityInitData initData;
 
         public virtual void OnEnterWorld()
         {
+            if (isInWorld)
+            {
+                throw new System.Exception("Entity already in world: " + id);
+            }
+
+            isInWorld = true;
             hp = hpMax;
+            bornTime = game.gameTime;
 
-            rigidbody = new Rigidbody(1, 1);
+            rigidbody = new Rigidbody(initData.mass, initData.inertial);
+            rigidbody.entity = this;
+
             Shape shape = new Shape(rigidbody, game.GetShapeData(initData.shapeIndex));
-            rigidbody.shape = shape;
+            shape.selfMask = initData.selfMask;
+            shape.collisionMask = initData.collisionMask;
+            shape.color = initData.color;
 
+            rigidbody.shape = shape;
             rigidbody.position = initData.position;
             rigidbody.rotation = initData.rotation;
             rigidbody.scale = initData.scale;
             rigidbody.velocity = initData.velocity;
             rigidbody.angleVelocity = initData.angleVelocity;
-
-            if (camp == Camp.Attack)
-            {
-                shape.selfMask = 0x01;
-                shape.collisionMask = 0x02;
-            }
-            else if (camp == Camp.Defence)
-            {
-                shape.selfMask = 0x02;
-                shape.collisionMask = ~0x02;
-            }
         }
 
         public virtual void OnLeaveWorld()
         {
+            if (!isInWorld)
+            {
+                throw new System.Exception("Entity not in world: " + id);
+            }
 
+            isInWorld = false;
+        }
+
+        /// <summary>
+        /// 每帧刷新调用
+        /// </summary>
+        public virtual void Update(float deltaTime)
+        {
+            if (game.gameTime - bornTime > lifeTime)
+            {
+                SetDead(true);
+            }
         }
         
+        /// <summary>
+        /// 碰撞开始回调
+        /// </summary>
         public virtual void OnCollisionEnter(CollisionInfo info)
         {
 
         }
 
+        /// <summary>
+        /// 碰撞结束回调
+        /// </summary>
         public virtual void OnCollisionExit(CollisionInfo info)
+        {
+
+        }
+
+        /// <summary>
+        /// 碰撞中回调
+        /// </summary>
+        public virtual void OnCollisionStay(CollisionInfo info)
+        {
+
+        }
+
+        public void SetHp(int v)
+        {
+            hp = Mathf.Clamp(v, 0, hpMax);
+            if (hp == 0)
+            {
+                SetDead(true);
+            }
+        }
+
+        public void AddHp(int v)
+        {
+            SetHp(hp + v);
+        }
+
+        public void SetDead(bool dead)
+        {
+            if (isDead == dead)
+            {
+                return;
+            }
+            isDead = dead;
+            if (dead)
+            {
+                OnDead();
+            }
+            else
+            {
+                OnReborn();
+            }
+        }
+
+        protected virtual void OnDead()
+        {
+            game.DestroyEntity(this);
+        }
+        
+        protected virtual void OnReborn()
         {
 
         }
     }
     
+    /// <summary>
+    /// 敌人类
+    /// </summary>
     public class Enemy : Entity
     {
+        BulletEmiter emiter;
+        public int dropHp;
 
+        public override void OnEnterWorld()
+        {
+            base.OnEnterWorld();
+
+            emiter = new BulletEmiter
+            {
+                owner = this,
+                selfMask = LayerMask.BULLET_ENEMY,
+                collisionMask = LayerMask.COLLISION_BULLET_ENEMY,
+                data = initData.emiterData,
+            };
+        }
+
+        public override void Update(float deltaTime)
+        {
+            base.Update(deltaTime);
+
+            if (rigidbody.shape.bounds.yMax < game.rect.yMin)
+            {
+                SetDead(true);
+                return;
+            }
+
+            emiter.Fire();
+            emiter.Update(deltaTime);
+        }
     }
-
+    
+    /// <summary>
+    /// 子弹类
+    /// </summary>
     public class Bullet : Entity
     {
         public Entity owner;
+        
+        public override void Update(float deltaTime)
+        {
+            base.Update(deltaTime);
+
+            if (rigidbody.shape.bounds.yMax < game.rect.yMin)
+            {
+                SetDead(true);
+            }
+        }
+
+        public override void OnCollisionEnter(CollisionInfo info)
+        {
+            if (isDead || !isInWorld)
+            {
+                return;
+            }
+            
+            if (info.entity != null)
+            {
+                HandleCollisionWithTarget(info.entity);
+            }
+
+            SetDead(true);
+        }
+
+        void HandleCollisionWithTarget(Entity target)
+        {
+            if (target.isDead)
+            {
+                return;
+            }
+
+            int damage = Mathf.Max(owner.attackPoint + attackPoint - target.defencePoint, 1);
+            target.AddHp(-damage);
+            
+            if (owner is Player player)
+            {
+                player.AddScore(1);
+
+                if (target.isDead)
+                {
+                    player.AddHp((target as Enemy).dropHp);
+                }
+            }
+        }
     }
+    
 
     /// <summary>
     /// 奖励
@@ -101,18 +324,53 @@ namespace Sample07
         /// <summary>
         /// 补给血量
         /// </summary>
-        public int supplyHp;
+        public int supplyHp = 100;
+        
+        public override void OnCollisionEnter(CollisionInfo info)
+        {
+            if (isDead || !isInWorld)
+            {
+                return;
+            }
+
+            if (info.entity != null)
+            {
+                info.entity.AddHp(supplyHp);
+            }
+
+            SetDead(true);
+        }
     }
 
     public class Player : Entity
     {
         public int score;
         public float moveSpeed = 5;
+        
+        public float collisionProtectCD = 3;
+        public float nextCollisionTime = 0;
 
-        public float emitCD = 0.2f;
-        public float nextEmitTime = 0;
+        public void AddScore(int v)
+        {
+            score += v;
+        }
 
-        public void Update(float deltaTime)
+        BulletEmiter emiter;
+
+        public override void OnEnterWorld()
+        {
+            base.OnEnterWorld();
+
+            emiter = new BulletEmiter
+            {
+                owner = this,
+                selfMask = LayerMask.BULLET_PLAYER,
+                collisionMask = LayerMask.COLLISION_BULLET_PLAYER,
+                data = initData.emiterData,
+            };
+        }
+
+        public override void Update(float deltaTime)
         {
             float s = moveSpeed * deltaTime;
             
@@ -122,30 +380,70 @@ namespace Sample07
             rigidbody.position += new Vector2(dx * s, dy * s);
             rigidbody.velocity = Vector2.Lerp(rigidbody.velocity, Vector2.zero, deltaTime);
 
-            if (Input.GetKey(KeyCode.RightControl))
+            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
             {
-                if (game.gameTime > nextEmitTime)
-                {
-                    nextEmitTime = game.gameTime + emitCD;
-                    EmitBullet();
-                }
+                emiter.Fire();
+            }
+
+            emiter.Update(deltaTime);
+        }
+
+        protected override void OnDead()
+        {
+            game.OnGameOver(false);
+        }
+
+        public override void OnCollisionEnter(CollisionInfo info)
+        {
+            if (isDead || !isInWorld)
+            {
+                return;
             }
         }
 
-        void EmitBullet()
+        public override void OnCollisionStay(CollisionInfo info)
         {
-            Bullet bullet = new Bullet
+            Entity target = info.entity;
+            // 撞墙了
+            if (target == null)
             {
-                owner = this,
-                camp = camp,
-                initData = new EntityInitData
-                {
-                    position = rigidbody.position,
-                    scale = new Vector2(0.1f, 0.5f),
-                    velocity = new Vector2(0, 5.0f),
-                },
-            };
-            game.AddEntity(bullet);
+                // 矫正坐标，不要穿到墙里
+                rigidbody.position -= info.normal * info.penetration;
+                info.penetration = 0;
+            }
+            // 被Enemy撞击了
+            else
+            {
+                HandleCollisionWithTarget(target);
+            }
+        }
+
+        void HandleCollisionWithTarget(Entity target)
+        {
+            if (target.isDead)
+            {
+                return;
+            }
+
+            // 先检查碰撞CD保护
+            if (game.gameTime < nextCollisionTime)
+            {
+                return;
+            }
+
+            nextCollisionTime += collisionProtectCD;
+
+            // 对敌人进行碰撞伤害
+            int damage = Mathf.Max(collisionDamage - target.defencePoint, 1);
+            target.AddHp(-damage);
+            if (target.isDead)
+            {
+                ++score;
+            }
+
+            // 对自己进行碰撞伤害
+            damage = Mathf.Max(target.collisionDamage - defencePoint, 1);
+            AddHp(-damage);
         }
     }
 

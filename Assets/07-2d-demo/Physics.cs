@@ -78,25 +78,21 @@ namespace Sample07
                 }
 
                 // 可以在这里派发事件
-                switch (collision.stage)
+                if (collision.stage == CollisionStage.Enter)
                 {
-                    case CollisionStage.Enter:
-                        notifyCollisionEvent(collision);
-                        collision.stage = CollisionStage.Stay;
-                        break;
-                    case CollisionStage.Exit:
-                        collision.stage = CollisionStage.None;
-                        removeCache.Add(pair.Key);
-                        notifyCollisionEvent(collision);
-                        break;
-                    case CollisionStage.Stay:
-                        break;
-                    default:
-                        break;
+                    notifyCollisionEvent(collision);
+                    collision.stage = CollisionStage.Stay;
                 }
-
+                else if (collision.stage == CollisionStage.Exit)
+                {
+                    collision.stage = CollisionStage.None;
+                    removeCache.Add(pair.Key);
+                    notifyCollisionEvent(collision);
+                }
+                
                 if (collision.stage == CollisionStage.Stay)
                 {
+                    notifyCollisionEvent(collision);
                     doPreSeperation(dt, collision);
                 }
             }
@@ -322,52 +318,61 @@ namespace Sample07
         void notifyCollisionEvent(CollisionPair info)
         {
             ContactInfo contact = info.contacts[0];
+            Rigidbody ra = info.rigidbodyA;
+            Rigidbody rb = info.rigidbodyB;
 
-            if (info.rigidbodyA.entity != null)
+            if (ra.entity != null && (ra.shape.collisionMask & rb.shape.selfMask) != 0)
             {
                 CollisionInfo data = new CollisionInfo
                 {
-                    rigidbody = info.rigidbodyB,
-                    entity = info.rigidbodyB.entity,
+                    rigidbody = rb,
+                    entity = rb.entity,
                     point = contact.point,
                     normal = contact.normal,
                     penetration = contact.penetration,
                 };
 
-                if (info.stage == CollisionStage.Enter)
-                {
-                    info.rigidbodyA.entity.OnCollisionEnter(data);
-                }
-                else if (info.stage == CollisionStage.Exit)
-                {
-                    info.rigidbodyA.entity.OnCollisionExit(data);
-                }
-
+                notifyCollisionEvent(ra.entity, info.stage, data);
                 contact.penetration = data.penetration;
             }
             
-            if (info.rigidbodyB.entity != null)
+            if (rb.entity != null && (rb.shape.collisionMask & ra.shape.selfMask) != 0)
             {
                 CollisionInfo data = new CollisionInfo
                 {
-                    rigidbody = info.rigidbodyB,
-                    entity = info.rigidbodyB.entity,
+                    rigidbody = ra,
+                    entity = ra.entity,
                     point = contact.point,
                     normal = -contact.normal,
                     penetration = contact.penetration,
                 };
 
-                if (info.stage == CollisionStage.Enter)
-                {
-                    info.rigidbodyB.entity.OnCollisionEnter(data);
-                }
-                else if (info.stage == CollisionStage.Exit)
-                {
-                    info.rigidbodyB.entity.OnCollisionExit(data);
-                }
-
+                notifyCollisionEvent(rb.entity, info.stage, data);
                 contact.penetration = data.penetration;
             }
+        }
+
+        void notifyCollisionEvent(Entity entity, CollisionStage stage, CollisionInfo data)
+        {
+            switch (stage)
+            {
+                case CollisionStage.Enter:
+                {
+                    entity.OnCollisionEnter(data);
+                    break;
+                }
+                case CollisionStage.Exit:
+                {
+                    entity.OnCollisionExit(data);
+                    break;
+                }
+                case CollisionStage.Stay:
+                {
+                    entity.OnCollisionStay(data);
+                    break;
+                }
+            }
+
         }
 
     }

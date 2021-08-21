@@ -25,7 +25,8 @@ namespace Sample07
 
         GUIContent helpContent = new GUIContent(
             "WASD移动;" +
-            "CTRL开火;"
+            "CTRL开火;" +
+            "ENTER重置;"
             );
 
         public Vector2[] boxVertices = new Vector2[]
@@ -51,14 +52,16 @@ namespace Sample07
             float halfHeight = camera.orthographicSize;
             float halfWidth = camera.aspect * halfHeight;
 
+            game.rect = new Rect(-halfWidth, -halfHeight, halfWidth * 2, halfHeight * 2);
+
             // left
-            CreateWall(new Vector2(-halfWidth, 0), new Vector2(1, halfHeight * 2));
+            CreateWall(new Vector2(-halfWidth - 0.4f, 0), new Vector2(1, halfHeight * 2));
             // right
-            CreateWall(new Vector2(halfWidth, 0), new Vector2(1, halfHeight * 2));
+            CreateWall(new Vector2(halfWidth + 0.5f, 0), new Vector2(1, halfHeight * 2));
             // top
-            CreateWall(new Vector2(0, halfHeight), new Vector2(halfWidth * 2, 1));
+            CreateWall(new Vector2(0, halfHeight + 0.4f), new Vector2(halfWidth * 2, 1));
             // botom
-            CreateWall(new Vector2(0, -halfHeight), new Vector2(halfWidth * 2, 1));
+            CreateWall(new Vector2(0, -halfHeight - 0.4f), new Vector2(halfWidth * 2, 1));
         }
 
         void CreateWall(Vector2 pos, Vector2 size)
@@ -68,6 +71,8 @@ namespace Sample07
             body.scale = size;
 
             body.shape = new Shape(body, boxVertices);
+            body.shape.selfMask = LayerMask.WALL;
+            body.shape.collisionMask = 0;
             physics.addRigidbody(body);
         }
         
@@ -77,6 +82,11 @@ namespace Sample07
 
             physics.maxIteration = inputData.maxIteration;
             physics.verbose = verbose;
+
+            if (Input.GetKeyUp(KeyCode.Return))
+            {
+                game.Restart();
+            }
             
             if (inputData.stepByStep)
             {
@@ -103,7 +113,8 @@ namespace Sample07
         {
             GUILayout.BeginVertical();
             GUILayout.Label(helpContent);
-            inputData.stepByStep = GUILayout.Toggle(inputData.stepByStep, "分步骤执行(鼠标点击下一步)");
+            GUILayout.Label("血量: " + game.player.hp);
+            GUILayout.Label("分数: " + game.player.score);
             GUILayout.EndVertical();
         }
         
@@ -130,7 +141,7 @@ namespace Sample07
         {
             for (int i = 0; i < shapes.Count; ++i)
             {
-                Color color = Color.green;
+                Color color = shapes[i].color;
                 if (i == selectedIndex)
                 {
                     color = new Color(1, 0, 1);
