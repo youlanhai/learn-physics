@@ -433,6 +433,7 @@ MonoBehaviour:
   inputData: {fileID: 0}
   lineTool: {fileID: 0}
   collisionCount: 0
+  verbose: 0
   boxVertices:
   - {x: -0.5, y: 0.5}
   - {x: -0.5, y: -0.5}

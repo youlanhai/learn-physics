@@ -36,7 +36,7 @@ namespace Sample06
             float sqrLength = ab.sqrMagnitude;
 
             // ab点重合了
-            if(sqrLength < float.Epsilon)
+            if (sqrLength < float.Epsilon)
             {
                 return a;
             }
@@ -62,7 +62,13 @@ namespace Sample06
             Vector2 ab = b - a;
             Vector2 ao = Vector2.zero - a;
 
-            float projection = Vector2.Dot(ab, ao) / ab.sqrMagnitude;
+            float sqrLength = ab.sqrMagnitude;
+            if (sqrLength < float.Epsilon)
+            {
+                return Vector2.zero;
+            }
+
+            float projection = Vector2.Dot(ab, ao) / sqrLength;
             return a + ab * projection;
         }
 

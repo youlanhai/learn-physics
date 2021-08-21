@@ -95,27 +95,15 @@ namespace Sample07
         // EPA算法计算穿透向量
         void queryEPA()
         {
+            // 仅保留距离原点最近的一条边，避免浮点数误差引起原点落在了边上，造成无法计算出该边的法线方向
+            if (simplex.count() > 2)
+            {
+                findNextDirection();
+            }
+
             simplexEdge.initEdges(simplex);
 
             currentEpaEdge = null;
-
-            // 先检查原点是否在某个边上，避免因为无法计算出边的方向，从而引起计算错误
-            if (simplexEdge.edges.Count < 3)
-            {
-                currentEpaEdge = simplexEdge.edges[0];
-                return;
-            }
-            else
-            {
-                foreach (Edge e in simplexEdge.edges)
-                {
-                    if (e.distance < float.Epsilon)
-                    {
-                        currentEpaEdge = e;
-                        return;
-                    }
-                }
-            }
             
             for (int i = 0; i < maxIterCount; ++i)
             {
@@ -317,13 +305,13 @@ namespace Sample07
         {
             edges.Clear();
 
-            int n = simplex.count();
-            for (int i = 0; i < n; ++i)
+            if (simplex.count() != 2)
             {
-                int iNext = (i + 1) % n;
-                Edge edge = createEdge(simplex.getSupport(i), simplex.getSupport(iNext));
-                edges.Add(edge);
+                throw new System.Exception("simplex point count must be 2!");
             }
+
+            edges.Add(createInitEdge(simplex.getSupport(0), simplex.getSupport(1)));
+            edges.Add(createInitEdge(simplex.getSupport(1), simplex.getSupport(0)));
 
             updateEdgeIndex();
         }
@@ -378,12 +366,32 @@ namespace Sample07
             }
             else
             {
-                // 如果距离原点太近，用数学的方法来得到直线的垂线
-                // 方向可以随便取，刚好另外一边是反着来的
+                // 用数学的方法来得到直线的垂线，但是方向可能是错的
                 Vector2 v = a.point - b.point;
                 v.Normalize();
                 e.normal = new Vector2(-v.y, v.x);
             }
+            return e;
+        }
+        
+        Edge createInitEdge(SupportPoint a, SupportPoint b)
+        {
+            Edge e = new Edge
+            {
+                a = a,
+                b = b,
+                distance = 0,
+            };
+
+            Vector3 perp = GJKTool.getPerpendicularToOrigin(a.point, b.point);
+            e.distance = perp.magnitude;
+
+            // 用数学的方法来得到直线的垂线
+            // 方向可以随便取，刚好另外一边是反着来的
+            Vector2 v = a.point - b.point;
+            v.Normalize();
+            e.normal = new Vector2(-v.y, v.x);
+
             return e;
         }
     }

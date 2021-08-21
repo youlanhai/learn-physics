@@ -48,15 +48,15 @@ namespace Sample06
             simplex.add(support(-direction));
 
             direction = -GJKTool.getClosestPointToOrigin(simplex.get(0), simplex.get(1));
-            for(int i = 0; i < maxIterCount; ++i)
+            for (int i = 0; i < maxIterCount; ++i)
             {
                 // 方向接近于0，说明原点就在边上
-                if(direction.sqrMagnitude < epsilon)
+                if (direction.sqrMagnitude < float.Epsilon)
                 {
                     isCollision = true;
                     break;
                 }
-                
+
                 SupportPoint p = support(direction);
                 // 新点与之前的点重合了。也就是沿着dir的方向，已经找不到更近的点了。
                 if (GJKTool.sqrDistance(p.point, simplex.get(0)) < epsilon ||
@@ -86,6 +86,7 @@ namespace Sample06
             {
                 queryEPA();
                 computeClosetPoint(currentEpaEdge.a, currentEpaEdge.b);
+                penetrationVector = currentEpaEdge.normal * currentEpaEdge.distance;
             }
 
             return isCollision;
@@ -94,25 +95,25 @@ namespace Sample06
         // EPA算法计算穿透向量
         void queryEPA()
         {
+            // 仅保留距离原点最近的一条边，避免浮点数误差引起原点落在了边上，造成无法计算出该边的法线方向
+            if (simplex.count() > 2)
+            {
+                findNextDirection();
+            }
+
             simplexEdge.initEdges(simplex);
 
             currentEpaEdge = null;
+
             for (int i = 0; i < maxIterCount; ++i)
             {
                 Edge e = simplexEdge.findClosestEdge();
                 currentEpaEdge = e;
-                if (e == null)
-                {
-                    break;
-                }
-
-                penetrationVector = e.normal * e.distance;
 
                 SupportPoint point = support(e.normal);
                 float distance = Vector2.Dot(point.point, e.normal);
                 if (distance - e.distance < epsilon)
                 {
-                    penetrationVector = e.normal * distance;
                     break;
                 }
 
@@ -304,13 +305,13 @@ namespace Sample06
         {
             edges.Clear();
 
-            int n = simplex.count();
-            for (int i = 0; i < n; ++i)
+            if (simplex.count() != 2)
             {
-                int iNext = (i + 1) % n;
-                Edge edge = createEdge(simplex.getSupport(i), simplex.getSupport(iNext));
-                edges.Add(edge);
+                throw new System.Exception("simplex point count must be 2!");
             }
+
+            edges.Add(createInitEdge(simplex.getSupport(0), simplex.getSupport(1)));
+            edges.Add(createInitEdge(simplex.getSupport(1), simplex.getSupport(0)));
 
             updateEdgeIndex();
         }
@@ -358,19 +359,39 @@ namespace Sample06
             e.normal = GJKTool.getPerpendicularToOrigin(a.point, b.point);
             float lengthSq = e.normal.sqrMagnitude;
             // 单位化边
-            if (lengthSq > 0.0001f)
+            if (lengthSq > float.Epsilon)
             {
                 e.distance = Mathf.Sqrt(lengthSq);
                 e.normal *= 1.0f / e.distance;
             }
             else
             {
-                // 如果距离原点太近，用数学的方法来得到直线的垂线
-                // 方向可以随便取，刚好另外一边是反着来的
+                // 用数学的方法来得到直线的垂线，但是方向可能是错的
                 Vector2 v = a.point - b.point;
                 v.Normalize();
                 e.normal = new Vector2(-v.y, v.x);
             }
+            return e;
+        }
+
+        Edge createInitEdge(SupportPoint a, SupportPoint b)
+        {
+            Edge e = new Edge
+            {
+                a = a,
+                b = b,
+                distance = 0,
+            };
+
+            Vector3 perp = GJKTool.getPerpendicularToOrigin(a.point, b.point);
+            e.distance = perp.magnitude;
+
+            // 用数学的方法来得到直线的垂线
+            // 方向可以随便取，刚好另外一边是反着来的
+            Vector2 v = a.point - b.point;
+            v.Normalize();
+            e.normal = new Vector2(-v.y, v.x);
+
             return e;
         }
     }

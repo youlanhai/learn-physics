@@ -62,7 +62,13 @@ namespace Sample07
             Vector2 ab = b - a;
             Vector2 ao = Vector2.zero - a;
 
-            float projection = Vector2.Dot(ab, ao) / ab.sqrMagnitude;
+            float sqrLength = ab.sqrMagnitude;
+            if (sqrLength < float.Epsilon)
+            {
+                return Vector2.zero;
+            }
+
+            float projection = Vector2.Dot(ab, ao) / sqrLength;
             return a + ab * projection;
         }
 
