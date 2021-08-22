@@ -429,6 +429,7 @@ namespace Sample07
             {
                 // 矫正坐标，不要穿到墙里
                 rigidbody.position -= info.normal * info.penetration;
+                // 将碰撞深度归零，不要让物理引擎产生作用力
                 info.penetration = 0;
             }
             // 被Enemy撞击了

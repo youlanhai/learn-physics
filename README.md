@@ -4,9 +4,13 @@
 
 详细文章内容，可以看我的博客: https://blog.csdn.net/you_lan_hai/article/details/108305631
 
+章节的目录被我统一移入了Assets/目录中。
+
 ![gjk-1](Assets/03-gjk/Image/gjk-1.gif)
 ![gjk-2](Assets/04-gjk-closest-point/Image/gjk2-1.gif)
 ![gjk-3](Assets/05-gjk-epa/Image/gjk3-1.gif)
+![seperation](Assets/06-seperation/Image/seperation.gif)
+![demo](Assets/07-2d-demo/Image/image.gif)
 
 
 # 第一部分 基础碰撞检测
@@ -16,16 +20,17 @@
 ## 4 [GJK计算最近距离](Assets/04-gjk-closest-point/README.md)
 ## 5 [GJK计算穿透向量(EPA)](Assets/05-gjk-epa/README.md)
 ## 6 [碰撞分离](Assets/06-seperation)
+## 7 [Demo小游戏飞机大战](Assets/07-2d-demo)
 
 # 第二部分 空间划分
-## 7 二叉树空间划分(BSP)
-## 8 AABB树空间划分
-## 9 基于网格的空间划分
+## 8 二叉树空间划分(BSP)
+## 9 AABB树空间划分
+## 10 基于网格的空间划分
 
 # 第三部分 3D碰撞检测
-## 10 基础内容
-## 11 GJK算法扩展到3D空间
-## 12 二叉树空间划分(BSP)
-## 13 AABB树空间划分
-## 14 基于网格的空间划分
+## 11 基础内容
+## 12 GJK算法扩展到3D空间
+## 13 二叉树空间划分(BSP)
+## 14 AABB树空间划分
+## 15 基于网格的空间划分
 
