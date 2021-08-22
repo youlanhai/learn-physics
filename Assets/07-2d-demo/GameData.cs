@@ -94,13 +94,15 @@ namespace Sample07
             enablePositionRange = true,
             positionBegin = new Vector2(-2, 0),
             positionEnd = new Vector2(2, 0),
-            bulletPositionDelta = new Vector2(0.2f, 0),
+            bulletPositionDelta = new Vector2(0.4f, 0),
 
             bulletCount = 48,
             bulletAngleDelta = 120.0f / 12,
             bulletVelocity = new Vector2(0, 3.0f),
             bulletTimeDelta = 0.1f,
         };
+
+        public List<EmiterData> emiters;
 
         public List<Vector2[]> shapeDatas = new List<Vector2[]>
         {
@@ -130,6 +132,18 @@ namespace Sample07
             },
         };
 
+        public GameData()
+        {
+            emiters = new List<EmiterData>
+            {
+                line1,
+                line2,
+                sun,
+                whip,
+                screw,
+                grid,
+            };
+        }
     }
 
 }

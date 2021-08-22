@@ -112,6 +112,12 @@ namespace Sample07
         /// </summary>
         float angle;
 
+        public void Reset()
+        {
+            isEmiting = false;
+            nextEmitTime = 0;
+        }
+
         public void Update(float deltaTime)
         {
             if (isEmiting)

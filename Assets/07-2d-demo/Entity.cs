@@ -268,7 +268,13 @@ namespace Sample07
     public class Bullet : Entity
     {
         public Entity owner;
-        
+
+        public override void OnEnterWorld()
+        {
+            base.OnEnterWorld();
+            rigidbody.shape.isTrigger = true;
+        }
+
         public override void Update(float deltaTime)
         {
             base.Update(deltaTime);
@@ -359,6 +365,12 @@ namespace Sample07
         }
 
         BulletEmiter emiter;
+        int emiterIndex = 1;
+
+        public void OnRestart()
+        {
+            emiter.Reset();
+        }
 
         public override void OnEnterWorld()
         {
@@ -386,6 +398,11 @@ namespace Sample07
             if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
             {
                 emiter.Fire();
+            }
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                emiterIndex = (emiterIndex + 1) % game.gameData.emiters.Count;
+                emiter.data = game.gameData.emiters[emiterIndex];
             }
 
             emiter.Update(deltaTime);

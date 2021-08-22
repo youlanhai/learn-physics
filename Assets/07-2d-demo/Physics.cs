@@ -93,7 +93,11 @@ namespace Sample07
                 if (collision.stage == CollisionStage.Stay)
                 {
                     notifyCollisionEvent(collision);
-                    doPreSeperation(dt, collision);
+
+                    if (!collision.isTrigger)
+                    {
+                        doPreSeperation(dt, collision);
+                    }
                 }
             }
 
@@ -107,7 +111,10 @@ namespace Sample07
             {
                 foreach (var pair in collisions)
                 {
-                    doPostSeperation(dt, pair.Value);
+                    if (!pair.Value.isTrigger)
+                    {
+                        doPostSeperation(dt, pair.Value);
+                    }
                 }
             }
         }
@@ -157,6 +164,7 @@ namespace Sample07
             }
             collision.gjk = gjk;
             collision.updateIndex = updateIndex;
+            collision.isTrigger = shapeA.isTrigger || shapeB.isTrigger;
 
             if (collision.stage == CollisionStage.None)
             {

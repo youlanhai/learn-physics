@@ -13,6 +13,7 @@ namespace Sample07
         public Color color = Color.green;
         public uint selfMask = 0xffffff;
         public uint collisionMask = 0xffffff;
+        public bool isTrigger = false;
 
         public Shape(Rigidbody rigidbody, Vector2[] vertices)
         {

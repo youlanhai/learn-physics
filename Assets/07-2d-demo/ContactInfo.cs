@@ -40,7 +40,8 @@ namespace Sample07
         public int updateIndex;
         public Rigidbody rigidbodyA;
         public Rigidbody rigidbodyB;
-        
+        public bool isTrigger;
+
         public CollisionStage stage;
         public List<ContactInfo> contacts = new List<ContactInfo>();
 

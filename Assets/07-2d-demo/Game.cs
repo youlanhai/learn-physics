@@ -93,14 +93,16 @@ namespace Sample07
             player.rigidbody.position = new Vector2(0, 0);
             player.rigidbody.setInertial(float.PositiveInfinity);
 
-            foreach(var pair in entities)
+            foreach (var pair in entities)
             {
                 if (pair.Value != player)
                 {
                     DestroyEntity(pair.Value);
                 }
             }
+
             FlushPendingEntities();
+            player.OnRestart();
         }
 
         public void Update(float deltaTime)

@@ -15,6 +15,7 @@ public class Main : MonoBehaviour
         "4.GJK计算多边形最近距离", "04-gjk-closest-point",
         "5.GJK&EPA计算穿透向量", "05-gjk-epa",
         "6.碰撞分离", "06-seperation",
+        "7.2D小游戏", "07-2d-demo",
     };
 
     private void Start()
