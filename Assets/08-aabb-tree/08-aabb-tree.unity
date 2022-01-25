@@ -387,7 +387,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 431183920}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a02983ab1485e274096d1184a71c2b26, type: 3}
+  m_Script: {fileID: 11500000, guid: 2e22e46048e48e74aa8edf6944abd1ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   lineRendererPrefab: {fileID: 2816814252288561132, guid: b3b286d5d9f8b474db30aaffc43406be,
@@ -401,7 +401,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 431183920}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8fe710ec4919bcb498377984a5f7e936, type: 3}
+  m_Script: {fileID: 11500000, guid: 748f607baf2c24f4a9c6de9fd5d86a7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   lineTool: {fileID: 0}

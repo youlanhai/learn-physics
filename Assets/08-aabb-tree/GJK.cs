@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sample07
+namespace Sample08
 {
 
     public class GJK
