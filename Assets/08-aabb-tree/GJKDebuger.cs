@@ -27,12 +27,32 @@ namespace Sample08
             "ENTER重置;"
             );
 
-        public Vector2[] boxVertices = new Vector2[]
+        List<Vector2[]> shapeDatas = new List<Vector2[]>
         {
-            new Vector2(-0.5f,  0.5f),
-            new Vector2(-0.5f, -0.5f),
-            new Vector2( 0.5f, -0.5f),
-            new Vector2( 0.5f,  0.5f),
+            // 三角形
+            new Vector2[]
+            {
+                new Vector2(0,  0.5f),
+                new Vector2(-0.5f, -0.5f),
+                new Vector2( 0.5f, -0.5f),
+            },
+            // 正方形
+            new Vector2[]
+            {
+                new Vector2(-0.5f,  0.5f),
+                new Vector2(-0.5f, -0.5f),
+                new Vector2( 0.5f, -0.5f),
+                new Vector2( 0.5f,  0.5f),
+            },
+            // 五边形
+            new Vector2[]
+            {
+                new Vector2(0.0f, 1.0f),
+                new Vector2(-1.0f, 0.3f),
+                new Vector2(-0.6f, -0.8f),
+                new Vector2(0.6f, -0.8f),
+                new Vector2(1.0f, 0.3f),
+            },
         };
 
         void Start()
@@ -60,6 +80,18 @@ namespace Sample08
             Rigidbody body = new Rigidbody(1, 1);
             body.addShape(new CircleShape(Vector2.zero, 1));
             physics.addRigidbody(body);
+
+            body = new Rigidbody(2, 1);
+            body.scale = new Vector2(2, 2);
+            body.addShape(new CircleShape(Vector2.zero, 1));
+            physics.addRigidbody(body);
+
+            for (int i = 0; i < shapeDatas.Count; ++i)
+            {
+                body = new Rigidbody(1 + i, 1 + i);
+                body.addShape(new PolygonShape(shapeDatas[i]));
+                physics.addRigidbody(body);
+            }
         }
 
         void CreateWall(Vector2 pos, Vector2 size)
@@ -68,7 +100,7 @@ namespace Sample08
             body.position = pos;
             body.scale = size;
 
-            var shape = new PolygonShape(boxVertices);
+            var shape = new PolygonShape(shapeDatas[1]);
             shape.selfMask = 0xffffffff;
             shape.collisionMask = 0;
 

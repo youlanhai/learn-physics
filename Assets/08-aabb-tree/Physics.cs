@@ -14,6 +14,8 @@ namespace Sample08
         public List<Rigidbody> rigidbodies = new List<Rigidbody>();
         public List<Shape> shapes = new List<Shape>();
 
+        AABBTree tree = new AABBTree();
+
         List<Rigidbody> pendingAdds = new List<Rigidbody>();
         List<Rigidbody> pendingRemoves = new List<Rigidbody>();
 
@@ -51,6 +53,7 @@ namespace Sample08
             foreach (var body in rigidbodies)
             {
                 body.postUpdate(dt);
+                tree.updateShape(body.shape);
             }
 
             flushPendingBodies();
@@ -60,10 +63,12 @@ namespace Sample08
         {
             for (int i = 0; i < shapes.Count - 1; ++i)
             {
-                for (int k = i + 1; k < shapes.Count; ++k)
+                Shape shape = shapes[i];
+                tree.query(shape.bounds, (AABBNode leaf) =>
                 {
-                    doCollisionTest(shapes[i], shapes[k]);
-                }
+                    doCollisionTest(shape, leaf.shape);
+                    return false;
+                });
             }
         }
 
@@ -139,7 +144,7 @@ namespace Sample08
                 shapeB = temp;
             }
 
-            if (!shapeA.bounds.Overlaps(shapeB.bounds))
+            if (!shapeA.bounds.intersect(shapeB.bounds))
             {
                 return;
             }
@@ -308,7 +313,9 @@ namespace Sample08
                 body.physics = this;
                 body.id = ++idCounter;
                 rigidbodies.Add(body);
+
                 shapes.Add(body.shape);
+                tree.addShape(body.shape);
 
                 body.updateTransform();
             }
@@ -319,6 +326,7 @@ namespace Sample08
                 body.physics = null;
                 rigidbodies.Remove(body);
                 shapes.Remove(body.shape);
+                tree.removeShape(body.shape);
             }
             pendingRemoves.Clear();
         }

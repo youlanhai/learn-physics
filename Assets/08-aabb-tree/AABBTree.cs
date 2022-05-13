@@ -59,16 +59,27 @@ namespace Sample08
             }
 
             AABBNode parent = node.parent;
-            Shape neighbourShape = node == parent.left ? parent.right.shape : parent.left.shape;
+            AABBNode neighbour = node == parent.left ? parent.right : parent.left;
 
-            // 将父结点变成一个叶结点
-            parent.left = null;
-            parent.right = null;
-            parent.shape = neighbourShape;
-            parent.bounds = neighbourShape.getLooseBounds();
-            nodes[shape] = parent;
-
-            updateBoundsBottomUp(parent.parent);
+            // 将邻居结点作为父结点
+            AABBNode grandParent = parent.parent;
+            if (grandParent == null)
+            {
+                root = neighbour;
+            }
+            else
+            {
+                neighbour.parent = grandParent;
+                if (parent == grandParent.left)
+                {
+                    grandParent.left = neighbour;
+                }
+                else
+                {
+                    grandParent.right = neighbour;
+                }
+                updateBoundsBottomUp(grandParent);
+            }
         }
 
         public void updateShape(Shape shape)
@@ -79,7 +90,7 @@ namespace Sample08
                 return;
             }
 
-            if (node.bounds.Contains(shape.bounds))
+            if (node.bounds.contains(shape.bounds))
             {
                 return;
             }
@@ -97,11 +108,67 @@ namespace Sample08
         /// <summary>
         /// 射线拾取
         /// </summary>
-        public void raycast(Vector2 origin, Vector3 diretion, float maxDistance, Func<bool, AABBNode> visitor)
+        public bool raycast(Ray2D ray, float maxDistance, out RaycastHit hit)
         {
+            hit = new RaycastHit();
+            if (root == null)
+            {
+                return false;
+            }
+
+            hit.distance = maxDistance;
+            return raycast(root, ray, ref hit);
         }
 
-        public void query(Rect bounds, Func<bool, AABBNode> visitor)
+        private bool raycast(AABBNode node, Ray2D ray, ref RaycastHit hit)
+        {
+            if (node.isLeaf)
+            {
+                RaycastHit temp;
+                if (node.shape.raycast(ray, out temp) && temp.distance < hit.distance)
+                {
+                    hit = temp;
+                    return true;
+                }
+                return false;
+            }
+
+            Vector2 rayEnd = ray.origin + ray.direction * hit.distance;
+            float d1 = node.left.bounds.getDistance(ray.origin, rayEnd);
+            float d2 = node.right.bounds.getDistance(ray.origin, rayEnd);
+
+            bool ret = false;
+            if (d1 < d2)
+            {
+                if (d1 < hit.distance)
+                {
+                    ret = raycast(node.left, ray, ref hit) && ret;
+                }
+                if (d2 < hit.distance)
+                {
+                    ret = raycast(node.right, ray, ref hit) && ret;
+                }
+            }
+            else
+            {
+                if (d2 < hit.distance)
+                {
+                    ret = raycast(node.right, ray, ref hit) && ret;
+                }
+                if (d1 < hit.distance)
+                {
+                    ret = raycast(node.left, ray, ref hit) && ret;
+                }
+            }
+            return ret;
+        }
+
+        /// <summary>
+        /// 碰撞查询
+        /// </summary>
+        /// <param name="bounds"></param>
+        /// <param name="visitor">visitor的返回值表示是否终止查询</param>
+        public void query(AABB bounds, Func<AABBNode, bool> visitor)
         {
             if (root == null)
             {
@@ -110,11 +177,28 @@ namespace Sample08
             query(root, bounds, visitor);
         }
 
-        private void query(AABBNode node, Rect bounds, Func<bool, AABBNode> visitor)
+        private bool query(AABBNode node, AABB bounds, Func<AABBNode, bool> visitor)
         {
+            if (!node.bounds.intersect(bounds))
+            {
+                return false;
+            }
+
+            if (node.isLeaf)
+            {
+                return visitor(node);
+            }
+            else
+            {
+                if (query(node.left, bounds, visitor))
+                {
+                    return true;
+                }
+                return query(node.right, bounds, visitor);
+            }
         }
 
-        private AABBNode createLeaf(Shape shape, AABBNode parent)
+        private AABBNode createLeaf(Shape shape, AABBNode parent = null)
         {
             AABBNode ret = new AABBNode
             {
@@ -126,13 +210,18 @@ namespace Sample08
             return ret;
         }
 
-        private AABBNode createNode(AABB bounds, AABBNode parent)
+        private AABBNode createNode(AABBNode left, AABBNode right, AABBNode parent = null)
         {
-            return new AABBNode
+            AABBNode ret = new AABBNode
             {
-                bounds = bounds,
+                bounds = new AABB(),
+                left = left,
+                right = right,
                 parent = parent,
             };
+            left.parent = ret;
+            right.parent = ret;
+            return ret;
         }
 
 

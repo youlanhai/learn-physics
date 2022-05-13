@@ -32,7 +32,7 @@ namespace Sample08
 
         public float area { get { return width * height; } }
 
-        public void Merge(Vector2 v)
+        public void merge(Vector2 v)
         {
             xMin = Mathf.Min(xMin, v.x);
             yMin = Mathf.Min(yMin, v.y);
@@ -40,7 +40,7 @@ namespace Sample08
             yMax = Mathf.Max(yMax, v.y);
         }
 
-        public void Merge(AABB b)
+        public void merge(AABB b)
         {
             xMin = Mathf.Min(xMin, b.xMin);
             yMin = Mathf.Min(yMin, b.yMin);
@@ -48,7 +48,7 @@ namespace Sample08
             yMax = Mathf.Max(yMax, b.yMax);
         }
 
-        public void Expand(float delta)
+        public void expand(float delta)
         {
             xMin = xMin - delta;
             yMin = yMin - delta;
@@ -56,31 +56,64 @@ namespace Sample08
             yMax = yMax + delta;
         }
 
-        public bool Contains(AABB b)
+        public bool contains(AABB b)
         {
             //return a.xMin <= b.xMin && a.xMax >= b.xMax && a.yMin <= b.xMin && a.yMax >= b.yMax;
             return !(b.xMin < xMin || b.xMax > xMax || b.yMin < yMin || b.yMax > yMax);
         }
 
-        public bool Contains(Vector2 p)
+        public bool containsc(Vector2 p)
         {
             return !(p.x < xMin || p.x > xMax || p.y < yMin || p.y > yMax);
         }
 
-        public bool Overlaps(AABB b)
+        public bool intersect(AABB b)
         {
             return !(xMax < b.xMin || yMax < b.yMin || xMin > b.xMax || yMin > b.yMax);
         }
 
+        public float getDistance(Vector2 start, Vector2 end)
+        {
+            float tMin = 0;
+            float tMax = 1;
+
+            Vector2 delta = end - start;
+
+            for (int i = 0; i < 2; ++i)
+            {
+                if (delta[i] != 0)
+                {
+                    float dMin = (min[i] - start[i]) / delta[i];
+                    float dMax = (max[i] - start[i]) / delta[i];
+
+                    if (dMin > dMax)
+                    {
+                        float temp = dMin;
+                        dMin = dMax;
+                        dMax = temp;
+                    }
+
+                    tMin = Mathf.Max(tMin, dMin);
+                    tMax = Mathf.Min(tMax, dMax);
+                }
+                else if (start[i] < min[i] || start[i] > max[i]) //起点不在包围盒范围。
+                    return float.MaxValue;
+            }
+
+            if (tMin > tMax || tMax < 0 || tMin > 1)
+            {
+                return float.MaxValue;
+            }
+
+            return tMin;
+        }
+
         public static AABB operator + (AABB a, AABB b)
         {
-            return new AABB
-            {
-                xMin = Mathf.Min(a.xMin, b.xMin),
-                yMin = Mathf.Min(a.yMin, b.yMin),
-                xMax = Mathf.Max(a.xMax, b.xMax),
-                yMax = Mathf.Max(a.yMax, b.yMax),
-            };
+            AABB ret = a;
+            ret.merge(b);
+            return ret;
         }
     }
+
 }
