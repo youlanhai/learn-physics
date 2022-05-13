@@ -6,7 +6,7 @@ namespace Sample08
     public class Shape
     {
         public Rigidbody rigidbody;
-        public Rect bounds;
+        public AABB bounds;
         public List<Vector2> originVertices = new List<Vector2>();
         public List<Vector2> vertices = new List<Vector2>();
 
@@ -37,7 +37,7 @@ namespace Sample08
                 vertices.Add(rigidbody.matrix.transformPoint(originVertices[i]));
             }
 
-            bounds = new Rect(vertices[0], Vector2.zero);
+            bounds = new AABB(vertices[0], Vector2.zero);
             foreach(var v in vertices)
             {
                 bounds.xMax = Mathf.Max(bounds.xMax, v.x);
@@ -67,9 +67,11 @@ namespace Sample08
         /// 获得松散的包围盒。只要在误差范围内，就不需要更新AABB树
         /// </summary>
         /// <returns></returns>
-        public Rect GetLooseBounds()
+        public AABB GetLooseBounds()
         {
-            return GJKTool.expandRect(bounds, boundsExpands);
+            AABB ret = bounds;
+            ret.Expand(boundsExpands);
+            return ret;
         }
     }
 

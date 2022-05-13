@@ -102,26 +102,5 @@ namespace Sample08
 
             return true;
         }
-
-        public static Rect mergeRect(Rect a, Rect b)
-        {
-            Rect ret = a;
-            ret.xMin = Mathf.Min(a.xMin, b.xMin);
-            ret.yMin = Mathf.Min(a.yMin, b.yMin);
-            ret.xMax = Mathf.Max(a.xMax, b.xMax);
-            ret.yMax = Mathf.Max(a.yMax, b.yMax);
-            return a;
-        }
-
-        public static Rect expandRect(Rect r, float delta)
-        {
-            return new Rect(r.xMin - delta, r.yMin - delta, r.width + delta * 2, r.height + delta * 2);
-        }
-
-        public static bool containsRect(Rect a, Rect b)
-        {
-            //return a.xMin <= b.xMin && a.xMax >= b.xMax && a.yMin <= b.xMin && a.yMax >= b.yMax;
-            return !(b.xMin < a.xMin || b.xMax > a.xMax || b.yMin < a.yMin || b.yMax > a.yMax);
-        }
     }
 }

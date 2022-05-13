@@ -26,22 +26,13 @@ namespace Sample08
                 return;
             }
 
-            Rect bounds = shape.GetLooseBounds();
+            AABB bounds = shape.GetLooseBounds();
 
             AABBNode node = root;
             while (!node.isLeaf)
             {
-                float leftCost = getCost(node.left.bounds, node.right.bounds, bounds);
-                float rightCost = getCost(node.right.bounds, node.left.bounds, bounds);
-
-                if (leftCost < rightCost)
-                {
-                    node = node.left;
-                }
-                else
-                {
-                    node = node.right;
-                }
+                bool isLeft = getBestParent(node.left.bounds, node.right.bounds, bounds);
+                node = isLeft ? node.left : node.right;
             }
             
             node.left = createLeaf(node.shape, node);
@@ -67,16 +58,8 @@ namespace Sample08
                 return;
             }
 
-            Shape neighbourShape;
             AABBNode parent = node.parent;
-            if (node == parent.left)
-            {
-                neighbourShape = parent.right.shape;
-            }
-            else
-            {
-                neighbourShape = parent.left.shape;
-            }
+            Shape neighbourShape = node == parent.left ? parent.right.shape : parent.left.shape;
 
             // 将父结点变成一个叶结点
             parent.left = null;
@@ -96,7 +79,7 @@ namespace Sample08
                 return;
             }
 
-            if (GJKTool.containsRect(node.bounds, shape.bounds))
+            if (node.bounds.Contains(shape.bounds))
             {
                 return;
             }
@@ -110,20 +93,7 @@ namespace Sample08
             root = null;
             nodes.Clear();
         }
-
-        /// <summary>
-        /// 重新构建整个树。会得到一个查询效率较高的满二叉树
-        /// </summary>
-        public void rebuild()
-        {
-
-        }
-
-        public void rebuild(List<Shape> shapes)
-        {
-
-        }
-
+        
         /// <summary>
         /// 射线拾取
         /// </summary>
@@ -133,7 +103,15 @@ namespace Sample08
 
         public void query(Rect bounds, Func<bool, AABBNode> visitor)
         {
+            if (root == null)
+            {
+                return;
+            }
+            query(root, bounds, visitor);
+        }
 
+        private void query(AABBNode node, Rect bounds, Func<bool, AABBNode> visitor)
+        {
         }
 
         private AABBNode createLeaf(Shape shape, AABBNode parent)
@@ -148,7 +126,7 @@ namespace Sample08
             return ret;
         }
 
-        private AABBNode createNode(Rect bounds, AABBNode parent)
+        private AABBNode createNode(AABB bounds, AABBNode parent)
         {
             return new AABBNode
             {
@@ -157,20 +135,31 @@ namespace Sample08
             };
         }
 
-        /// <summary>
-        /// 获取c合并到a的估值
-        /// </summary>
-        private float getCost(Rect a, Rect b, Rect c)
+
+        private bool getBestParent(AABB a, AABB b, AABB c)
         {
-            Rect ac = GJKTool.mergeRect(a, c);
-            return ac.width * ac.height + b.width * b.height;
+            float w1 = (a + c).area + b.area;
+            float w2 = (b + c).area + a.area;
+
+            if (w1 < w2)
+            {
+                return true;
+            }
+            else if (w1 > w2)
+            {
+                return false;
+            }
+
+            w1 = Mathf.Abs(c.xMin + c.xMax - a.xMin - a.xMax) + Mathf.Abs(c.yMin + c.yMax - a.yMin - a.yMax);
+            w2 = Mathf.Abs(c.xMin + c.xMax - b.xMin - b.xMax) + Mathf.Abs(c.yMin + c.yMax - b.yMin - b.yMax);
+            return w1 < w2;
         }
 
         private void updateBoundsBottomUp(AABBNode node)
         {
             while (node != null)
             {
-                node.bounds = GJKTool.mergeRect(node.left.bounds, node.right.bounds);
+                node.bounds = node.left.bounds + node.right.bounds;
                 node = node.parent;
             }
         }
@@ -184,7 +173,7 @@ namespace Sample08
         /// <summary>
         /// 当前结点的包围盒
         /// </summary>
-        public Rect bounds;
+        public AABB bounds;
 
         /// <summary>
         /// 父结点
