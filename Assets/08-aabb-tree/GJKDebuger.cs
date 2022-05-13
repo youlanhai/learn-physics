@@ -56,6 +56,10 @@ namespace Sample08
             CreateWall(new Vector2(0, halfHeight + 0.4f), new Vector2(halfWidth * 2, 1));
             // botom
             CreateWall(new Vector2(0, -halfHeight - 0.4f), new Vector2(halfWidth * 2, 1));
+
+            Rigidbody body = new Rigidbody(1, 1);
+            body.addShape(new CircleShape(Vector2.zero, 1));
+            physics.addRigidbody(body);
         }
 
         void CreateWall(Vector2 pos, Vector2 size)
@@ -64,9 +68,11 @@ namespace Sample08
             body.position = pos;
             body.scale = size;
 
-            body.shape = new Shape(body, boxVertices);
-            body.shape.selfMask = 0xffffffff;
-            body.shape.collisionMask = 0;
+            var shape = new PolygonShape(boxVertices);
+            shape.selfMask = 0xffffffff;
+            shape.collisionMask = 0;
+
+            body.addShape(shape);
             physics.addRigidbody(body);
         }
         
@@ -82,7 +88,7 @@ namespace Sample08
                 //game.Restart();
             }
 
-            //game.Update(Time.deltaTime);
+            physics.update(Time.fixedDeltaTime);
 
             collisionCount = physics.collisions.Count;
             UpdateSelection();
@@ -133,7 +139,7 @@ namespace Sample08
                 //{
                 //    color = Color.red;
                 //}
-                DrawPolygon(shapes[i].vertices, color);
+                shapes[i].debugDraw(lineTool, color);
             }
         }
 
@@ -147,7 +153,7 @@ namespace Sample08
                 selectedIndex = -1;
                 for (int i = 0; i < shapes.Count; ++i)
                 {
-                    if (GJKTool.contains(shapes[i].vertices, mousePos))
+                    if (shapes[i].contains(mousePos))
                     {
                         selectedIndex = i;
                         break;
@@ -193,6 +199,30 @@ namespace Sample08
 
                     float angle = mouseAngle - selectedAngle;
                     t.rotation = angle;
+                }
+            }
+
+            if (Input.GetMouseButtonDown(1))
+            {
+                Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+                Shape shape = null;
+                for (int i = 0; i < shapes.Count; ++i)
+                {
+                    if (shapes[i].contains(mousePos))
+                    {
+                        shape = shapes[i];
+                        break;
+                    }
+                }
+
+                if (shape != null)
+                {
+                    var t = shape.rigidbody;
+                    Vector2 dir = t.position - mousePos;
+                    dir.Normalize();
+
+                    t.forceImpulse = dir * 2.0f;
                 }
             }
         }

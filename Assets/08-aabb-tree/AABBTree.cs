@@ -26,7 +26,7 @@ namespace Sample08
                 return;
             }
 
-            AABB bounds = shape.GetLooseBounds();
+            AABB bounds = shape.getLooseBounds();
 
             AABBNode node = root;
             while (!node.isLeaf)
@@ -65,7 +65,7 @@ namespace Sample08
             parent.left = null;
             parent.right = null;
             parent.shape = neighbourShape;
-            parent.bounds = neighbourShape.GetLooseBounds();
+            parent.bounds = neighbourShape.getLooseBounds();
             nodes[shape] = parent;
 
             updateBoundsBottomUp(parent.parent);
@@ -118,7 +118,7 @@ namespace Sample08
         {
             AABBNode ret = new AABBNode
             {
-                bounds = shape.GetLooseBounds(),
+                bounds = shape.getLooseBounds(),
                 shape = shape,
                 parent = parent,
             };

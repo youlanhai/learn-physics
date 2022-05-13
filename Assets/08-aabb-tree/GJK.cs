@@ -138,10 +138,12 @@ namespace Sample08
 
         public Vector2 findFirstDirection()
         {
-            Vector2 dir = shapeA.vertices[0] - shapeB.vertices[0];
+            Vector2 pointA = shapeA.bounds.center;
+            Vector2 pointB = shapeB.bounds.center;
+            Vector2 dir = pointA - pointB;
             if (dir.sqrMagnitude < epsilon) // 避免首次取到的点距离为0
             {
-                dir = shapeA.vertices[1] - shapeB.vertices[0];
+                dir = new Vector2(1, 0);
             }
             return dir;
         }

@@ -25,6 +25,7 @@ namespace Sample08
         
         public Vector2 min { get { return new Vector2(xMin, yMin); } }
         public Vector2 max { get { return new Vector2(xMax, yMax); } }
+        public Vector2 center { get { return new Vector2((xMin + xMax) * 0.5f, (yMin + yMax) * 0.5f); } }
 
         public float width { get { return xMax - xMin; } }
         public float height { get { return yMax - yMin; } }
@@ -59,6 +60,11 @@ namespace Sample08
         {
             //return a.xMin <= b.xMin && a.xMax >= b.xMax && a.yMin <= b.xMin && a.yMax >= b.yMax;
             return !(b.xMin < xMin || b.xMax > xMax || b.yMin < yMin || b.yMax > yMax);
+        }
+
+        public bool Contains(Vector2 p)
+        {
+            return !(p.x < xMin || p.x > xMax || p.y < yMin || p.y > yMax);
         }
 
         public bool Overlaps(AABB b)

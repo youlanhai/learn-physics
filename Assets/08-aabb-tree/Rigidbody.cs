@@ -43,7 +43,7 @@ namespace Sample08
         /// 坐标变换矩阵。用来变换形状的坐标点。
         public Matrix2D matrix;
 
-        public Shape shape;
+        public Shape shape { get; private set; }
         public Physics physics;
         public object entity;
 
@@ -148,6 +148,13 @@ namespace Sample08
 
             force.Set(0, 0);
             forceImpulse.Set(0, 0);
+        }
+
+        // 暂时只支持一个shape，且需要在添加到Physics之前调用
+        public void addShape(Shape shape)
+        {
+            this.shape = shape;
+            shape.setRigidbody(this);
         }
     }
 

@@ -3,12 +3,10 @@ using System.Collections.Generic;
 
 namespace Sample08
 {
-    public class Shape
+    public abstract class Shape
     {
-        public Rigidbody rigidbody;
+        public Rigidbody rigidbody { get; private set; }
         public AABB bounds;
-        public List<Vector2> originVertices = new List<Vector2>();
-        public List<Vector2> vertices = new List<Vector2>();
 
         public Color color = Color.green;
         public uint selfMask = 0xffffff;
@@ -20,34 +18,135 @@ namespace Sample08
         /// </summary>
         public float boundsExpands = 0.1f;
 
-        public Shape(Rigidbody rigidbody, Vector2[] vertices)
+        public Shape()
         {
-            this.rigidbody = rigidbody;
+        }
+
+        public virtual void updateTransform()
+        {
+        }
+
+        public abstract bool contains(Vector2 point);
+
+        public abstract Vector2 getFarthestPointInDirection(Vector2 dir, out int index);
+
+        /// <summary>
+        /// 获得松散的包围盒。只要在误差范围内，就不需要更新AABB树
+        /// </summary>
+        /// <returns></returns>
+        public AABB getLooseBounds()
+        {
+            AABB ret = bounds;
+            ret.Expand(boundsExpands);
+            return ret;
+        }
+
+        internal void setRigidbody(Rigidbody body)
+        {
+            rigidbody = body;
+        }
+
+        public virtual void debugDraw(GJKLineTool tool, Color color)
+        {
+
+        }
+
+        public virtual void getDebugVertices(List<Vector2> vertices)
+        {
+
+        }
+    }
+
+    public class CircleShape : Shape
+    {
+        private Vector2 originCenter;
+        private float originRadius;
+
+        public Vector2 center;
+        public float radius;
+
+        public CircleShape(Vector2 center, float radius)
+        {
+            originCenter = center;
+            originRadius = radius;
+        }
+
+        public override void updateTransform()
+        {
+            center = rigidbody.matrix.transformPoint(originCenter);
+            radius = rigidbody.scale.x * originRadius;
+
+            bounds = new AABB(
+                new Vector2(center.x - radius, center.y - radius),
+                new Vector2(radius * 2, radius * 2)
+            );
+        }
+
+        public override bool contains(Vector2 point)
+        {
+            return GJKTool.sqrDistance(center, point) < radius * radius;
+        }
+
+        public override Vector2 getFarthestPointInDirection(Vector2 dir, out int index)
+        {
+            index = 0;
+            return center + dir.normalized * radius;
+        }
+
+        public override void debugDraw(GJKLineTool tool, Color color)
+        {
+            tool.DrawCircle(center, radius, color);
+        }
+
+        public override void getDebugVertices(List<Vector2> vertices)
+        {
+            int n = 36;
+            float stepAngle = Mathf.PI * 2 / n;
+            for (int i = 0; i < n; ++i)
+            {
+                Vector2 pos = new Vector2(
+                    center.x + Mathf.Cos(i * stepAngle) * radius,
+                    center.y + Mathf.Sin(i * stepAngle) * radius
+                    );
+                vertices.Add(pos);
+            }
+        }
+    }
+
+    public class PolygonShape : Shape
+    {
+        private List<Vector2> originVertices = new List<Vector2>();
+        public List<Vector2> vertices = new List<Vector2>();
+
+        public PolygonShape(Vector2[] vertices)
+        {
             if (vertices != null)
             {
                 originVertices.AddRange(vertices);
             }
         }
 
-        public void updateTransform()
+        public override void updateTransform()
         {
             vertices.Clear();
-            for(int i = 0; i < originVertices.Count; ++i)
+            for (int i = 0; i < originVertices.Count; ++i)
             {
                 vertices.Add(rigidbody.matrix.transformPoint(originVertices[i]));
             }
 
             bounds = new AABB(vertices[0], Vector2.zero);
-            foreach(var v in vertices)
+            foreach (var v in vertices)
             {
-                bounds.xMax = Mathf.Max(bounds.xMax, v.x);
-                bounds.xMin = Mathf.Min(bounds.xMin, v.x);
-                bounds.yMax = Mathf.Max(bounds.yMax, v.y);
-                bounds.yMin = Mathf.Min(bounds.yMin, v.y);
+                bounds.Merge(v);
             }
         }
 
-        public Vector2 getFarthestPointInDirection(Vector2 dir, out int index)
+        public override bool contains(Vector2 point)
+        {
+            return GJKTool.contains(vertices, point);
+        }
+
+        public override Vector2 getFarthestPointInDirection(Vector2 dir, out int index)
         {
             float maxDistance = float.MinValue;
             index = 0;
@@ -63,15 +162,14 @@ namespace Sample08
             return vertices[index];
         }
 
-        /// <summary>
-        /// 获得松散的包围盒。只要在误差范围内，就不需要更新AABB树
-        /// </summary>
-        /// <returns></returns>
-        public AABB GetLooseBounds()
+        public override void debugDraw(GJKLineTool tool, Color color)
         {
-            AABB ret = bounds;
-            ret.Expand(boundsExpands);
-            return ret;
+            tool.DrawPolygon(vertices, color);
+        }
+
+        public override void getDebugVertices(List<Vector2> vertices)
+        {
+            vertices.AddRange(this.vertices);
         }
     }
 

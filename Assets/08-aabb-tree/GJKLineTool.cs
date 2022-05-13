@@ -30,6 +30,7 @@ namespace Sample08
             var lineRenderer = lineRenderers[lineRendererIndex++];
             lineRenderer.startWidth = originLineRenderer.startWidth;
             lineRenderer.endWidth = originLineRenderer.endWidth;
+            lineRenderer.loop = false;
             return lineRenderer;
         }
 
@@ -91,6 +92,26 @@ namespace Sample08
                 lineRenderer.SetPosition(n, vertices[0]);
             }
             return lineRenderer;
+        }
+
+        public void DrawCircle(Vector2 center, float radius, Color color)
+        {
+            LineRenderer lineRenderer = requireLineRenderer();
+            lineRenderer.startColor = color;
+            lineRenderer.endColor = color;
+
+            int n = 36;
+            float stepAngle = Mathf.PI * 2 / n;
+            lineRenderer.positionCount = n;
+            lineRenderer.loop = true;
+            for (int i = 0; i < n; ++i)
+            {
+                Vector2 pos = new Vector2(
+                    center.x + Mathf.Cos(i * stepAngle) * radius,
+                    center.y + Mathf.Sin(i * stepAngle) * radius
+                    );
+                lineRenderer.SetPosition(i, pos);
+            }
         }
 
         public void EndDraw()
