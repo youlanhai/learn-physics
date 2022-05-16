@@ -82,15 +82,18 @@ namespace Sample08
             physics.addRigidbody(body);
 
             body = new Rigidbody(2, 1);
-            body.scale = new Vector2(2, 2);
+            body.scale = new Vector2(1.5f, 1.5f);
             body.addShape(new CircleShape(Vector2.zero, 1));
             physics.addRigidbody(body);
 
-            for (int i = 0; i < shapeDatas.Count; ++i)
+            for (int k = 0; k < 4; ++k)
             {
-                body = new Rigidbody(1 + i, 1 + i);
-                body.addShape(new PolygonShape(shapeDatas[i]));
-                physics.addRigidbody(body);
+                for (int i = 0; i < shapeDatas.Count; ++i)
+                {
+                    body = new Rigidbody(1 + i, 1 + i);
+                    body.addShape(new PolygonShape(shapeDatas[i]));
+                    physics.addRigidbody(body);
+                }
             }
         }
 
