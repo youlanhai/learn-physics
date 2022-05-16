@@ -63,13 +63,13 @@ namespace Sample08
 
             // 将邻居结点作为父结点
             AABBNode grandParent = parent.parent;
+            neighbour.parent = grandParent;
             if (grandParent == null)
             {
                 root = neighbour;
             }
             else
             {
-                neighbour.parent = grandParent;
                 if (parent == grandParent.left)
                 {
                     grandParent.left = neighbour;
