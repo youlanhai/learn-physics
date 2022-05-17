@@ -11,7 +11,12 @@ namespace Sample08
         public float biasFactor = 0.1f;
         public int maxIteration = 10;
 
+        public Vector2 gravity;
+        public float sleepSpeed = 0.01f;
+        public float sleepIdleTime = 0.0f;
+
         public List<Rigidbody> rigidbodies = new List<Rigidbody>();
+        private List<Rigidbody> activeBodies = new List<Rigidbody>();
         public List<Shape> shapes = new List<Shape>();
 
         AABBTree tree = new AABBTree();
@@ -37,33 +42,44 @@ namespace Sample08
             pendingRemoves.Add(body);
         }
 
+        internal void addActiveBody(Rigidbody body)
+        {
+            activeBodies.Add(body);
+        }
+
         public void update(float dt)
         {
             ++updateIndex;
             flushPendingBodies();
 
-            foreach (var body in rigidbodies)
+            // 不能用foreach，因为activeBodies会变化
+            // foreach (var body in activeBodies)
+            for (int i = 0; i < activeBodies.Count; ++i)
             {
+                Rigidbody body = activeBodies[i];
                 body.preUpdate(dt);
             }
 
             updateCollisionTest();
             updateSeperation(dt);
 
-            foreach (var body in rigidbodies)
+            for (int i = 0; i < activeBodies.Count; ++i)
             {
+                Rigidbody body = activeBodies[i];
                 body.postUpdate(dt);
                 tree.updateShape(body.shape);
             }
+            activeBodies.RemoveAll((Rigidbody body) => !body.isActive);
 
             flushPendingBodies();
         }
 
         void updateCollisionTest()
         {
-            for (int i = 0; i < shapes.Count - 1; ++i)
+            for (int i = 0; i < activeBodies.Count; ++i)
             {
-                Shape shape = shapes[i];
+                Rigidbody body = activeBodies[i];
+                Shape shape = body.shape;
                 tree.query(shape.bounds, (AABBNode leaf) =>
                 {
                     doCollisionTest(shape, leaf.shape);
@@ -126,7 +142,8 @@ namespace Sample08
 
         void doCollisionTest(Shape shapeA, Shape shapeB)
         {
-            if (shapeA.rigidbody.isStatic && shapeB.rigidbody.isStatic)
+            if (shapeA.rigidbody == shapeB.rigidbody ||
+                shapeA.rigidbody.isStatic && shapeB.rigidbody.isStatic)
             {
                 return;
             }
@@ -137,6 +154,11 @@ namespace Sample08
                 return;
             }
 
+            if (!shapeA.bounds.intersect(shapeB.bounds))
+            {
+                return;
+            }
+            
             if (shapeA.rigidbody.id > shapeB.rigidbody.id)
             {
                 Shape temp = shapeA;
@@ -144,17 +166,21 @@ namespace Sample08
                 shapeB = temp;
             }
 
-            if (!shapeA.bounds.intersect(shapeB.bounds))
-            {
-                return;
-            }
-            
             GJK gjk = new GJK();
             if (!gjk.queryCollision(shapeA, shapeB))
             {
                 return;
             }
-            
+
+            if (!shapeA.rigidbody.isStatic)
+            {
+                shapeA.rigidbody.setActive(true);
+            }
+            if (!shapeB.rigidbody.isStatic)
+            {
+                shapeB.rigidbody.setActive(true);
+            }
+
             int hash = genHash(shapeA.rigidbody.id, shapeB.rigidbody.id);
 
             CollisionPair collision;
@@ -310,9 +336,9 @@ namespace Sample08
         {
             foreach (var body in pendingAdds)
             {
-                body.physics = this;
                 body.id = ++idCounter;
                 rigidbodies.Add(body);
+                body.onAddToPhysics(this);
 
                 shapes.Add(body.shape);
                 tree.addShape(body.shape);
@@ -323,10 +349,11 @@ namespace Sample08
 
             foreach (var body in pendingRemoves)
             {
-                body.physics = null;
                 rigidbodies.Remove(body);
+                activeBodies.Remove(body);
                 shapes.Remove(body.shape);
                 tree.removeShape(body.shape);
+                body.onRemoveFromPhysics();
             }
             pendingRemoves.Clear();
         }

@@ -44,10 +44,14 @@ namespace Sample08
         public Matrix2D matrix;
 
         public Shape shape { get; private set; }
-        public Physics physics;
+        public Physics physics { get; private set; }
         public object entity;
 
-        public bool isStatic { get { return invMass == 0; } }
+        public bool isStatic { get { return invMass < 0.000001f; } }
+        public bool isActive { get; private set; }
+        public bool isInPhysics { get { return physics != null; } }
+
+        private float idleTime;
 
         public Rigidbody(float mass, float inertial)
         {
@@ -83,8 +87,13 @@ namespace Sample08
 
         public void preUpdate(float dt)
         {
+            if (isStatic)
+            {
+                return;
+            }
+
             // 计算作用力. v += a * t; a = F / m
-            velocity += force * invMass * dt;
+            velocity += (force * invMass + physics.gravity) * dt;
             angleVelocity += torque * invInertial * dt;
 
             // 计算脉冲力
@@ -101,8 +110,25 @@ namespace Sample08
 
         public void postUpdate(float dt)
         {
-            position += velocity * dt;
-            rotation += angleVelocity * dt;
+            if (!isStatic)
+            {
+                position += velocity * dt;
+                rotation += angleVelocity * dt;
+                
+                if (canEnterIdle())
+                {
+                    idleTime += dt;
+                }
+                else
+                {
+                    idleTime = 0;
+                }
+            }
+            
+            if (isStatic || idleTime > physics.sleepIdleTime)
+            {
+                sleep();
+            }
 
             updateTransform();
         }
@@ -148,6 +174,8 @@ namespace Sample08
 
             force.Set(0, 0);
             forceImpulse.Set(0, 0);
+
+            isActive = false;
         }
 
         // 暂时只支持一个shape，且需要在添加到Physics之前调用
@@ -155,6 +183,62 @@ namespace Sample08
         {
             this.shape = shape;
             shape.setRigidbody(this);
+        }
+
+        public AABB getBounds()
+        {
+            AABB bounds = new AABB(position, Vector2.zero);
+            bounds.merge(shape.bounds);
+            return bounds;
+        }
+
+        private bool canEnterIdle()
+        {
+            float sqrSleepSpeed = physics.sleepSpeed;
+            sqrSleepSpeed *= sqrSleepSpeed;
+
+            if (velocity.sqrMagnitude > sqrSleepSpeed)
+            {
+                return false;
+            }
+
+            Vector2 r = getBounds().extends;
+
+            float sqrAngleSpeed = angleVelocity * Mathf.Deg2Rad;
+            sqrAngleSpeed *= sqrAngleSpeed;
+
+            if (r.sqrMagnitude * sqrAngleSpeed > sqrSleepSpeed)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        internal void onAddToPhysics(Physics physics)
+        {
+            this.physics = physics;
+            isActive = !isStatic;
+            physics.addActiveBody(this);
+        }
+
+        internal void onRemoveFromPhysics()
+        {
+            physics = null;
+        }
+
+        public void setActive(bool active)
+        {
+            if (isActive == active)
+            {
+                return;
+            }
+
+            isActive = active;
+            if (isInPhysics && active)
+            {
+                idleTime = 0;
+                physics.addActiveBody(this);
+            }
         }
     }
 

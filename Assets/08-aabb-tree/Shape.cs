@@ -96,20 +96,24 @@ namespace Sample08
 
         public override void debugDraw(GJKLineTool tool, Color color)
         {
-            tool.DrawCircle(center, radius, color);
+            List<Vector2> vertices = new List<Vector2>();
+            getDebugVertices(vertices);
+            tool.DrawPolygon(vertices, color);
         }
 
         public override void getDebugVertices(List<Vector2> vertices)
         {
-            int n = 36;
+            int n = 20;
             float stepAngle = Mathf.PI * 2 / n;
+            float startAngle = rigidbody.rotation * Mathf.Deg2Rad;
             for (int i = 0; i < n; ++i)
             {
                 Vector2 pos = new Vector2(
-                    center.x + Mathf.Cos(i * stepAngle) * radius,
-                    center.y + Mathf.Sin(i * stepAngle) * radius
+                    center.x + Mathf.Cos(startAngle) * radius,
+                    center.y + Mathf.Sin(startAngle) * radius
                     );
                 vertices.Add(pos);
+                startAngle += stepAngle;
             }
         }
 

@@ -22,8 +22,8 @@ namespace Sample08
         float selectedAngle;
 
         GUIContent helpContent = new GUIContent(
-            "WASD移动;" +
-            "CTRL开火;" +
+            "鼠标左键拖动;" +
+            "鼠标右键施加力;" +
             "ENTER重置;"
             );
 
@@ -60,6 +60,7 @@ namespace Sample08
             lineTool = GetComponent<GJKLineTool>();
             
             physics = new Physics();
+            //physics.gravity = new Vector2(0, -2.8f);
             shapes = physics.shapes;
             
             Camera camera = Camera.main;
@@ -120,7 +121,7 @@ namespace Sample08
 
             if (Input.GetKeyUp(KeyCode.Return))
             {
-                //game.Restart();
+                ResetGame();
             }
 
             physics.update(Time.fixedDeltaTime);
@@ -165,16 +166,17 @@ namespace Sample08
         {
             for (int i = 0; i < shapes.Count; ++i)
             {
-                Color color = shapes[i].color;
+                Shape shape = shapes[i];
+                Color color = shape.color;
                 if (i == selectedIndex)
                 {
                     color = new Color(1, 0, 1);
                 }
-                //else if (shapes[i].isCollision)
-                //{
-                //    color = Color.red;
-                //}
-                shapes[i].debugDraw(lineTool, color);
+                else if (shape.rigidbody.isActive)
+                {
+                    color = Color.red;
+                }
+                shape.debugDraw(lineTool, color);
             }
         }
 
@@ -235,6 +237,8 @@ namespace Sample08
                     float angle = mouseAngle - selectedAngle;
                     t.rotation = angle;
                 }
+
+                t.setActive(true);
             }
 
             if (Input.GetMouseButtonDown(1))
@@ -257,8 +261,25 @@ namespace Sample08
                     Vector2 dir = t.position - mousePos;
                     dir.Normalize();
 
-                    t.forceImpulse = dir * 2.0f;
+                    t.forceImpulse = dir * 10.0f;
+                    t.setActive(true);
                 }
+            }
+        }
+
+        void ResetGame()
+        {
+            foreach (var body in physics.rigidbodies)
+            {
+                if (body.isStatic)
+                {
+                    continue;
+                }
+                body.position = Vector2.zero;
+                body.rotation = 0;
+                body.velocity = Vector2.zero;
+                body.angleVelocity = 0;
+                body.setActive(true);
             }
         }
     }

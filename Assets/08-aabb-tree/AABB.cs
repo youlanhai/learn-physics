@@ -29,6 +29,8 @@ namespace Sample08
 
         public float width { get { return xMax - xMin; } }
         public float height { get { return yMax - yMin; } }
+        public Vector2 size { get { return new Vector2(width, height); } }
+        public Vector2 extends { get { return new Vector2(width * 0.5f, height * 0.5f); } }
 
         public float area { get { return width * height; } }
 

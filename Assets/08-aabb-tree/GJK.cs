@@ -51,7 +51,7 @@ namespace Sample08
             for(int i = 0; i < maxIterCount; ++i)
             {
                 // 方向接近于0，说明原点就在边上
-                if(direction.sqrMagnitude < float.Epsilon)
+                if(direction.sqrMagnitude < epsilon)
                 {
                     isCollision = true;
                     break;
