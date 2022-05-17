@@ -194,20 +194,15 @@ namespace Sample08
 
         private bool canEnterIdle()
         {
-            float sqrSleepSpeed = physics.sleepSpeed;
-            sqrSleepSpeed *= sqrSleepSpeed;
-
-            if (velocity.sqrMagnitude > sqrSleepSpeed)
+            float sleepSpeed = physics.sleepSpeed;
+            if (velocity.sqrMagnitude > sleepSpeed * sleepSpeed)
             {
                 return false;
             }
 
-            Vector2 r = getBounds().extends;
-
-            float sqrAngleSpeed = angleVelocity * Mathf.Deg2Rad;
-            sqrAngleSpeed *= sqrAngleSpeed;
-
-            if (r.sqrMagnitude * sqrAngleSpeed > sqrSleepSpeed)
+            AABB bounds = getBounds();
+            float r = Mathf.Max(bounds.width, bounds.height) * 0.5f;
+            if (r * angleVelocity * Mathf.Deg2Rad > sleepSpeed)
             {
                 return false;
             }

@@ -17,9 +17,12 @@ namespace Sample08
         List<Shape> shapes;
         
         // 当前选中的shape信息
-        int selectedIndex = -1;
+        Shape selectedShape;
         Vector2 selectedOffset;
-        float selectedAngle;
+        Vector2 lastMouseMovePos;
+        bool selectForMove;
+
+        private Vector2 raycastStart;
 
         GUIContent helpContent = new GUIContent(
             "鼠标左键拖动;" +
@@ -168,7 +171,7 @@ namespace Sample08
             {
                 Shape shape = shapes[i];
                 Color color = shape.color;
-                if (i == selectedIndex)
+                if (shape == selectedShape)
                 {
                     color = new Color(1, 0, 1);
                 }
@@ -176,85 +179,62 @@ namespace Sample08
                 {
                     color = Color.red;
                 }
+                //lineTool.DrawBox(shape.bounds, Color.white, 0.5f);
                 shape.debugDraw(lineTool, color);
             }
         }
 
         void UpdateSelection()
         {
+            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
             if(Input.GetMouseButtonDown(0))
             {
-                Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 //Debug.Log("mousePos: " + mousePos);
-
-                selectedIndex = -1;
-                for (int i = 0; i < shapes.Count; ++i)
+                selectedShape = physics.pointCast(mousePos);
+                
+                if (selectedShape != null)
                 {
-                    if (shapes[i].contains(mousePos))
-                    {
-                        selectedIndex = i;
-                        break;
-                    }
-                }
+                    var t = selectedShape.rigidbody;
+                    selectedOffset = mousePos - t.position;
 
-                if(selectedIndex >= 0)
-                {
-                    var t = shapes[selectedIndex].rigidbody;
-                    Vector2 position = t.position;
-                    selectedOffset = mousePos - position;
+                    AABB bounds = t.getBounds();
+                    selectForMove = selectedOffset.sqrMagnitude < bounds.extends.sqrMagnitude * (0.5f * 0.5f);
 
-                    float mouseAngle = Mathf.Atan2(selectedOffset.y, selectedOffset.x) * Mathf.Rad2Deg;
-                    selectedAngle = mouseAngle - t.rotation;
+                    lastMouseMovePos = mousePos;
                 }
             }
             else if(Input.GetMouseButtonUp(0))
             {
-                selectedIndex = -1;
+                selectedShape = null;
             }
             else if(Input.GetMouseButton(0))
             {
-                if(selectedIndex < 0)
+                Vector2 mouseDir = mousePos - lastMouseMovePos;
+                if (selectedShape != null && mouseDir.sqrMagnitude > 0.0001f)
                 {
-                    return;
+                    lastMouseMovePos = mousePos;
+                    Rigidbody t = selectedShape.rigidbody;
+
+                    if (selectForMove) // 移动
+                    {
+                        t.position = mousePos - selectedOffset;
+                    }
+                    else // 旋转
+                    {
+                        Vector2 newOffset = mousePos - t.position;
+                        float clockwise = GJKTool.cross(selectedOffset, mouseDir) > 0 ? 1.0f : -1.0f;
+                        float mouseAngle = mouseDir.magnitude / 4.0f * 360.0f; // 每4米对应360度
+                        t.rotation -= mouseAngle * clockwise;
+                    }
+
+                    t.setActive(true);
                 }
-
-                Rigidbody t = shapes[selectedIndex].rigidbody;
-
-                Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                if(selectedOffset.magnitude < 0.4f) // 移动
-                {
-                    Vector3 position = t.position;
-                    position.x = mousePos.x - selectedOffset.x;
-                    position.y = mousePos.y - selectedOffset.y;
-                    t.position = position;
-                }
-                else // 旋转
-                {
-                    Vector2 position = t.position;
-                    Vector2 mouseDir = mousePos - position;
-                    float mouseAngle = Mathf.Atan2(mouseDir.y, mouseDir.x) * Mathf.Rad2Deg;
-
-                    float angle = mouseAngle - selectedAngle;
-                    t.rotation = angle;
-                }
-
-                t.setActive(true);
             }
 
             if (Input.GetMouseButtonDown(1))
             {
-                Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-                Shape shape = null;
-                for (int i = 0; i < shapes.Count; ++i)
-                {
-                    if (shapes[i].contains(mousePos))
-                    {
-                        shape = shapes[i];
-                        break;
-                    }
-                }
-
+                Shape shape = physics.pointCast(mousePos);
                 if (shape != null)
                 {
                     var t = shape.rigidbody;
@@ -264,6 +244,27 @@ namespace Sample08
                     t.forceImpulse = dir * 10.0f;
                     t.setActive(true);
                 }
+            }
+
+            // 测试射线检测
+            if (true)
+            {
+                Vector2 raycastEnd;
+                Vector2 raycastDir = mousePos - raycastStart;
+                if (raycastDir.sqrMagnitude < 0.0001f)
+                {
+                    raycastDir.x = 1.0f;
+                }
+                raycastDir.Normalize();
+                if (physics.raycast(new Ray2D(raycastStart, raycastDir), 20.0f, out RaycastHit hit))
+                {
+                    raycastEnd = hit.point;
+                }
+                else
+                {
+                    raycastEnd = raycastStart + raycastDir * 20.0f;
+                }
+                lineTool.DrawLine(raycastStart, raycastEnd, Color.red);
             }
         }
 

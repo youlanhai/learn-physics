@@ -16,7 +16,7 @@ namespace Sample08
         /// <summary>
         /// 将包围盒向外扩展一点，避免AABB树频繁更新
         /// </summary>
-        public float boundsExpands = 0.1f;
+        public float boundsExpands = 0.3f;
 
         public Shape()
         {
@@ -239,7 +239,7 @@ namespace Sample08
         
                 float t1 = (c.x * b.y - c.y * b.x) / denominator;
                 float t2 = (c.x * a.y - c.y * a.x) / denominator;
-                if (t1 < 0 || t2 < 0)
+                if (t1 < 0 || t2 < 0 || t2 > 1.0f)
                 {
                     continue;
                 }

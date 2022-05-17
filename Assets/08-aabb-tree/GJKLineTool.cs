@@ -16,7 +16,7 @@ namespace Sample08
             originLineRenderer = lineRendererPrefab.GetComponent<LineRenderer>();
         }
 
-        public LineRenderer requireLineRenderer()
+        public LineRenderer requireLineRenderer(float width = 1.0f)
         {
             if (lineRendererIndex >= lineRenderers.Count)
             {
@@ -28,8 +28,8 @@ namespace Sample08
             }
 
             var lineRenderer = lineRenderers[lineRendererIndex++];
-            lineRenderer.startWidth = originLineRenderer.startWidth;
-            lineRenderer.endWidth = originLineRenderer.endWidth;
+            lineRenderer.startWidth = originLineRenderer.startWidth * width;
+            lineRenderer.endWidth = originLineRenderer.endWidth * width;
             lineRenderer.loop = false;
             return lineRenderer;
         }
@@ -112,6 +112,20 @@ namespace Sample08
                     );
                 lineRenderer.SetPosition(i, pos);
             }
+        }
+
+        public void DrawBox(AABB bounds, Color color, float width = 1.0f)
+        {
+            LineRenderer lineRenderer = requireLineRenderer(width);
+            lineRenderer.startColor = color;
+
+            lineRenderer.positionCount = 4;
+            lineRenderer.loop = true;
+
+            lineRenderer.SetPosition(0, new Vector3(bounds.xMin, bounds.yMin, 0));
+            lineRenderer.SetPosition(1, new Vector3(bounds.xMin, bounds.yMax, 0));
+            lineRenderer.SetPosition(2, new Vector3(bounds.xMax, bounds.yMax, 0));
+            lineRenderer.SetPosition(3, new Vector3(bounds.xMax, bounds.yMin, 0));
         }
 
         public void EndDraw()

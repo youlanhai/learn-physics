@@ -408,11 +408,6 @@ MonoBehaviour:
   collisionCount: 0
   verbose: 0
   maxIteration: 5
-  boxVertices:
-  - {x: -0.5, y: 0.5}
-  - {x: -0.5, y: -0.5}
-  - {x: 0.5, y: -0.5}
-  - {x: 0.5, y: 0.5}
 --- !u!1 &534669902
 GameObject:
   m_ObjectHideFlags: 0

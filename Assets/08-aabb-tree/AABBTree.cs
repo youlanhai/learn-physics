@@ -142,22 +142,22 @@ namespace Sample08
             {
                 if (d1 < hit.distance)
                 {
-                    ret = raycast(node.left, ray, ref hit) && ret;
+                    ret = raycast(node.left, ray, ref hit) || ret;
                 }
                 if (d2 < hit.distance)
                 {
-                    ret = raycast(node.right, ray, ref hit) && ret;
+                    ret = raycast(node.right, ray, ref hit) || ret;
                 }
             }
             else
             {
                 if (d2 < hit.distance)
                 {
-                    ret = raycast(node.right, ray, ref hit) && ret;
+                    ret = raycast(node.right, ray, ref hit) || ret;
                 }
                 if (d1 < hit.distance)
                 {
-                    ret = raycast(node.left, ray, ref hit) && ret;
+                    ret = raycast(node.left, ray, ref hit) || ret;
                 }
             }
             return ret;

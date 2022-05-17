@@ -60,7 +60,7 @@ namespace Sample08
                 body.preUpdate(dt);
             }
 
-            updateCollisionTest();
+            queryCollisionPairs();
             updateSeperation(dt);
 
             for (int i = 0; i < activeBodies.Count; ++i)
@@ -74,7 +74,7 @@ namespace Sample08
             flushPendingBodies();
         }
 
-        void updateCollisionTest()
+        void queryCollisionPairs()
         {
             for (int i = 0; i < activeBodies.Count; ++i)
             {
@@ -414,7 +414,38 @@ namespace Sample08
                     break;
                 }
             }
+        }
 
+        public bool raycast(Ray2D ray, float maxDistance, out RaycastHit hit)
+        {
+            return tree.raycast(ray, maxDistance, out hit);
+        }
+        
+        public Shape queryShape(AABB bounds)
+        {
+            Shape ret = null;
+            tree.query(bounds, (AABBNode node) =>
+            {
+                ret = node.shape;
+                return true;
+            });
+            return ret;
+        }
+
+        public Shape pointCast(Vector2 point, float radius = 0.1f)
+        {
+            AABB bounds = new AABB(point, new Vector2(radius * 2, radius * 2));
+            Shape ret = null;
+            tree.query(bounds, (AABBNode node) =>
+            {
+                if (node.shape.contains(point))
+                {
+                    ret = node.shape;
+                    return true;
+                }
+                return false;
+            });
+            return ret;
         }
 
     }
